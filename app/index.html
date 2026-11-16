@@ -88,6 +88,7 @@ body.stiftmodus .hinweis-stift{display:block}
 #editor{outline:none;font-family:Calibri,Carlito,"Segoe UI",sans-serif;font-size:15px;line-height:1.55;color:#1F2328;min-height:200px;word-wrap:break-word;caret-color:var(--akzent)}
 #editor > *:first-child{margin-top:0}
 #editor p{margin:0 0 6px}
+#editor p,#editor h1,#editor h2,#editor h3,#editor li,#editor td{white-space:pre-wrap;tab-size:47px}
 #editor h1{font-size:23px;line-height:1.25;color:var(--akzent);margin:18px 0 8px;font-weight:700}
 #editor h2{font-size:19px;line-height:1.3;color:var(--akzent);margin:16px 0 6px;font-weight:700}
 #editor h3{font-size:16px;line-height:1.35;color:#3A3F47;margin:12px 0 4px;font-weight:700}
@@ -117,7 +118,7 @@ body.stiftmodus .hinweis-stift{display:block}
 #editor p.bildquelle{font-size:11.5px;color:#6B7280;text-align:center;margin-top:-4px}
 #editor .zeichenplatz{display:block;margin:0;user-select:none}
 #tinte{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-#tinte text{font-family:"Segoe Print","Segoe UI",sans-serif;white-space:pre}
+#tinte text{font-family:Calibri,Carlito,"Segoe UI",sans-serif;white-space:pre}
 </style>
 <style id="nur-editor">
 #editor img.gewaehlt{outline:3px solid var(--akzent);outline-offset:2px}
@@ -126,7 +127,8 @@ body.stiftmodus.wz-radierer #tinte{cursor:cell}
 body.stiftmodus.wz-text #tinte{cursor:text}
 body.stiftmodus #editor{user-select:none}
 body.stiftmodus #editor .zeichenplatz{outline:1px dashed #D9DDE3}
-#tinte-eingabe{position:absolute;display:none;z-index:5;border:1px dashed #9AA3AE;background:rgba(255,255,255,.92);font-family:"Segoe Print","Segoe UI",sans-serif;padding:0 3px;outline:none;min-width:80px;white-space:pre}
+#tinte-eingabe{position:absolute;display:none;z-index:5;border:1px dashed #9AA3AE;background:rgba(255,255,255,.92);font-family:Calibri,Carlito,"Segoe UI",sans-serif;padding:0 3px;outline:none;min-width:60px;white-space:pre;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+body.ueber-textfeld .blatt, body.ueber-textfeld #editor{cursor:move}
 #bildmenue{position:fixed;z-index:40;display:none;background:#1F2328;color:#fff;border-radius:8px;padding:3px;gap:2px;box-shadow:var(--schatten)}
 #bildmenue button{background:transparent;border:0;color:#fff;padding:5px 9px;border-radius:6px;font-size:12.5px}
 #bildmenue button:hover{background:#3A4049}
@@ -215,8 +217,13 @@ ol.schritte li{margin:4px 0}
         <button class="wz" data-liste="nummern" title="Nummerierung 1. 2. 3."><svg viewBox="0 0 24 24"><path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 4.5h1v4M3.6 8.5h2.4" stroke-width="1.6"/><path d="M3.5 14.5c.4-.6 2.4-.8 2.4.4 0 1-2.4 2-2.4 3h2.6" stroke-width="1.6"/></svg></button>
         <button class="wz" id="listenmenue-knopf" title="Weitere Aufzählungen"><span class="t">Liste</span><span class="pfeil-runter">▼</span></button>
         <span class="trenner"></span>
-        <button class="wz" id="ausruecken" title="Einzug verkleinern (Umschalt+Tab)"><svg viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="m7 8-4 4 4 4"/></svg></button>
-        <button class="wz" id="einruecken" title="Einzug vergrößern (Tab)"><svg viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="m3 8 4 4-4 4"/></svg></button>
+        <button class="wz" data-ausrichtung="left" title="Linksbündig (Strg+L)"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h12M3 14h18M3 18h12"/></svg></button>
+        <button class="wz" data-ausrichtung="center" title="Zentriert (Strg+E)"><svg viewBox="0 0 24 24"><path d="M3 6h18M6 10h12M3 14h18M6 18h12"/></svg></button>
+        <button class="wz" data-ausrichtung="right" title="Rechtsbündig (Strg+R)"><svg viewBox="0 0 24 24"><path d="M3 6h18M9 10h12M3 14h18M9 18h12"/></svg></button>
+        <button class="wz" data-ausrichtung="justify" title="Blocksatz (Strg+J)"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h18M3 14h18M3 18h18"/></svg></button>
+        <span class="trenner"></span>
+        <button class="wz" id="ausruecken" title="Einzug verkleinern"><svg viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="m7 8-4 4 4 4"/></svg></button>
+        <button class="wz" id="einruecken" title="Einzug vergrößern"><svg viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="m3 8 4 4-4 4"/></svg></button>
       </div>
       <div class="name">Absatz</div>
     </div>
@@ -238,7 +245,7 @@ ol.schritte li{margin:4px 0}
         <button class="wz" data-wz="pfeil" title="Pfeil"><svg viewBox="0 0 24 24"><path d="M5 19 19 5"/><path d="M9 5h10v10"/></svg></button>
         <button class="wz" data-wz="linie" title="Gerade Linie"><svg viewBox="0 0 24 24"><path d="M4 20 20 4"/></svg></button>
         <button class="wz" data-wz="rahmen" title="Kreis / Rahmen um etwas"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6.5"/></svg></button>
-        <button class="wz" data-wz="text" title="Text irgendwo aufs Blatt (z. B. für eine Mindmap)"><span class="t" style="font-family:'Segoe Print',sans-serif;font-weight:700">T</span></button>
+        <button class="wz" data-wz="text" title="Text irgendwo aufs Blatt (z. B. für eine Mindmap)"><span class="t" style="font-weight:700">T</span></button>
         <button class="wz" data-wz="radierer" title="Radierer (löscht ganze Striche)"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l10-10a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L13 19"/><path d="M22 21H7"/></svg></button>
         <span class="stiftoptionen" id="stiftfarben"></span>
         <span class="stiftoptionen">
@@ -339,7 +346,7 @@ ol.schritte li{margin:4px 0}
       <button class="knopf" id="m-fach">＋ Anderes Fach hinzufügen</button>
     </div>
     <p id="m-info" style="color:var(--leise);font-size:12.5px;margin-top:14px"></p>
-    <p style="color:var(--leise);font-size:12.5px">Tastenkürzel: Strg+Alt+1/2/3 Überschriften · Strg+Umschalt+N Standard · Strg+Umschalt+L Aufzählung · „- “ oder „1. “ am Zeilenanfang startet eine Liste · Tab/Umschalt+Tab ein-/ausrücken · Strg+Mausrad/Strg+± Zoom</p>
+    <p style="color:var(--leise);font-size:12.5px">Tastenkürzel: Strg+Alt+1/2/3 Überschriften · Strg+Umschalt+N Standard · Strg+Umschalt+L Aufzählung · Strg+L/E/R/J links/zentriert/rechts/Blocksatz · Doppelklick auf freie Stelle = dort schreiben · „- “ oder „1. “ am Zeilenanfang startet eine Liste · Tab/Umschalt+Tab ein-/ausrücken · Strg+Mausrad/Strg+± Zoom</p>
     <div class="knoepfe"><button class="knopf" data-schliessen>Schließen</button></div>
   </div>
 </div>
@@ -657,13 +664,59 @@ $("#listenmenue-knopf").onclick = e => {
   m.style.left = r.left + "px"; m.style.top = (r.bottom + 4) + "px"; m.classList.toggle("offen");
 };
 document.addEventListener("mousedown", e => { if (!e.target.closest("#listenmenue,#listenmenue-knopf")) $("#listenmenue").classList.remove("offen"); });
+const TABSTOPP = 47; // 1,25 cm wie in Word
+/* Absätze (auch Listenpunkte/Tabellenzellen) in der Auswahl */
+function absatzElemente() {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return [];
+  const r = s.getRangeAt(0); const SEL = "p,h1,h2,h3,li,td,th";
+  if (r.collapsed) { const n = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentNode; const a = n.closest(SEL); return a && editor.contains(a) ? [a] : []; }
+  return [...editor.querySelectorAll(SEL)].filter(el => r.intersectsNode(el) && !el.classList.contains("bildquelle"));
+}
 function einzug(mehr) {
   if (!editor.contains(getSelection().anchorNode)) editor.focus();
   merken();
   if (listeAnCaret()) document.execCommand(mehr ? "indent" : "outdent");
-  else if (mehr) document.execCommand("insertText", false, "    ");
+  else for (const a of absatzElemente()) {
+    if (a.matches("td,th")) continue;
+    const jetzt = parseFloat(a.style.marginLeft) || 0;
+    const neu = Math.max(0, Math.min(TABSTOPP * 10, jetzt + (mehr ? TABSTOPP : -TABSTOPP)));
+    a.style.marginLeft = neu ? neu + "px" : "";
+    if (!a.getAttribute("style")) a.removeAttribute("style");
+  }
   neuOrdnen(); geaendert();
 }
+/* Tab-Taste wie in Word: springt zum nächsten Tabstopp (alle 1,25 cm) */
+function tabTaste(zurueck) {
+  const s = getSelection(); if (!s.rangeCount) return;
+  const li = (s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentNode).closest("li");
+  if (li && editor.contains(li)) {
+    const vorher = document.createRange(); vorher.setStart(li, 0); vorher.setEnd(s.anchorNode, s.anchorOffset);
+    const amAnfang = !vorher.toString().length;
+    if (amAnfang || !s.isCollapsed) { einzug(!zurueck); return; } // am Anfang eines Listenpunkts: eine Ebene tiefer/höher
+  }
+  if (zurueck) {
+    // Umschalt+Tab: einen Tab vor dem Cursor entfernen, sonst Einzug verkleinern
+    if (s.isCollapsed && s.anchorNode.nodeType === 3 && s.anchorOffset > 0 && s.anchorNode.data[s.anchorOffset - 1] === "\t") { merken(); document.execCommand("delete"); return; }
+    einzug(false); return;
+  }
+  merken("tab"); document.execCommand("insertText", false, "\t");
+}
+/* Ausrichtung: links, zentriert, rechts, Blocksatz */
+function ausrichten(wert) {
+  if (!editor.contains(getSelection().anchorNode)) editor.focus();
+  merken();
+  for (const a of absatzElemente()) {
+    a.style.textAlign = wert === "left" ? "" : (a.classList.contains("bildabsatz") && wert === "justify" ? "center" : wert);
+    if (!a.getAttribute("style")) a.removeAttribute("style");
+  }
+  neuOrdnen(); geaendert(); ausrichtungAnzeigen();
+}
+function ausrichtungAnzeigen() {
+  const a = absatzElemente()[0]; let w = a ? getComputedStyle(a).textAlign : "left";
+  if (w === "start") w = "left"; if (w === "end") w = "right";
+  $$("[data-ausrichtung]").forEach(b => b.classList.toggle("an", b.dataset.ausrichtung === w));
+}
+$$("[data-ausrichtung]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => ausrichten(b.dataset.ausrichtung); });
 $("#einruecken").addEventListener("mousedown", e => e.preventDefault()); $("#einruecken").onclick = () => einzug(true);
 $("#ausruecken").addEventListener("mousedown", e => e.preventDefault()); $("#ausruecken").onclick = () => einzug(false);
 
@@ -699,12 +752,13 @@ document.addEventListener("keydown", e => {
   if (strg && e.altKey && ["1", "2", "3"].includes(e.key)) { e.preventDefault(); vorlageAnwenden("h" + e.key); return; }
   if (strg && e.shiftKey && e.key.toLowerCase() === "n") { e.preventDefault(); vorlageAnwenden("p"); return; }
   if (strg && e.shiftKey && e.key.toLowerCase() === "l") { e.preventDefault(); liste("punkte"); return; }
+  if (strg && !e.shiftKey && !e.altKey) { const w = { l: "left", e: "center", r: "right", j: "justify" }[e.key.toLowerCase()]; if (w) { e.preventDefault(); ausrichten(w); return; } }
   if (e.key === " " && autoformat(e)) return;
   if (e.key === "Tab") {
     e.preventDefault();
     const zelle = getSelection().anchorNode && (getSelection().anchorNode.nodeType === 1 ? getSelection().anchorNode : getSelection().anchorNode.parentNode).closest("td,th");
     if (zelle && editor.contains(zelle)) { naechsteZelle(zelle, e.shiftKey); return; }
-    einzug(!e.shiftKey); return;
+    tabTaste(e.shiftKey); return;
   }
   if (e.key === "Enter" && !e.shiftKey) {
     // Leere Zeile am Ende eines Kastens → Kasten verlassen (wie in Word)
@@ -716,7 +770,7 @@ document.addEventListener("keydown", e => {
     }
   }
 });
-document.addEventListener("selectionchange", () => { if (editor.contains(getSelection().anchorNode)) { vorlageAnzeigen(); listeAnzeigen(); } });
+document.addEventListener("selectionchange", () => { if (editor.contains(getSelection().anchorNode)) { vorlageAnzeigen(); listeAnzeigen(); ausrichtungAnzeigen(); } });
 
 /* =====================================================================
    Tabellen
@@ -921,7 +975,7 @@ function grenzen(s) {
 }
 const absGrenzen = s => { const g = grenzen(s), o = ankerOben(s); return { x0: g.x0, x1: g.x1, y0: g.y0 + o, y1: g.y1 + o }; };
 const messCanvas = document.createElement("canvas").getContext("2d");
-function textBreite(t, g) { messCanvas.font = `${g}px "Segoe Print","Segoe UI",sans-serif`; return messCanvas.measureText(t).width; }
+function textBreite(t, g) { messCanvas.font = `${g}px Calibri, Carlito, "Segoe UI", sans-serif`; return messCanvas.measureText(t).width; }
 
 /* SVG-Formen */
 function pfadD(pts) {
@@ -1065,14 +1119,15 @@ blatt.addEventListener("pointerdown", e => {
 
 /* Text aufs Blatt (für Mindmaps) */
 const eingabe = $("#tinte-eingabe"); let eingabeInfo = null;
-function textEingabeStart(x, y) {
+const textfeldBei = (x, y) => striche.slice().reverse().find(s => { if (s.typ !== "text") return false; const g = absGrenzen(s); return x >= g.x0 - 4 && x <= g.x1 + 4 && y >= g.y0 - 4 && y <= g.y1 + 4; });
+function textEingabeStart(x, y, opt = {}) {
   textEingabeFertig();
   // vorhandenen Text anklicken → bearbeiten
-  const treffer = striche.find(s => { if (s.typ !== "text") return false; const g = absGrenzen(s); return x >= g.x0 - 4 && x <= g.x1 + 4 && y >= g.y0 - 4 && y <= g.y1 + 4; });
-  const groesse = treffer ? treffer.groesse : Math.round(13 + stiftDicke * 2);
+  const treffer = textfeldBei(x, y);
+  const groesse = treffer ? treffer.groesse : (opt.groesse || Math.round(13 + stiftDicke * 2));
   eingabeInfo = treffer ? { alt: treffer } : { x, y: y - groesse * .7 };
   const g = treffer ? absGrenzen(treffer) : null;
-  Object.assign(eingabe.style, { display: "block", left: (treffer ? treffer.x : x) - 4 + "px", top: (treffer ? g.y0 : y - groesse * .7) - 2 + "px", fontSize: groesse + "px", color: treffer ? treffer.farbe : stiftFarbe, lineHeight: 1.25 });
+  Object.assign(eingabe.style, { display: "block", left: (treffer ? treffer.x : x) - 4 + "px", top: (treffer ? g.y0 : y - groesse * .7) - 2 + "px", fontSize: groesse + "px", color: treffer ? treffer.farbe : (opt.farbe || stiftFarbe), lineHeight: 1.25 });
   eingabe.innerText = treffer ? treffer.text : "";
   setTimeout(() => { eingabe.focus(); const r = document.createRange(); r.selectNodeContents(eingabe); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r); }, 0);
 }
@@ -1089,6 +1144,61 @@ function textEingabeFertig() {
 }
 eingabe.addEventListener("keydown", e => { if (e.key === "Escape") { eingabe.innerText = ""; textEingabeFertig(); } if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); textEingabeFertig(); } });
 eingabe.addEventListener("blur", () => setTimeout(textEingabeFertig, 0));
+
+/* Im Tipp-Modus: überall aufs Blatt schreiben (wie „Klicken und Eingeben“ in Word)
+   - Doppelklick auf eine freie Stelle  → dort ein Textfeld
+   - Klick in eine Zeichenfläche (Platz unter einer Zeichnung) → dort ein Textfeld
+   - Textfeld anklicken → bearbeiten, ziehen → verschieben */
+function freieStelle(e) {
+  if (e.target.closest && e.target.closest("img,table,a")) return false;
+  if (istPlatz(e.target)) return true;
+  if (!editor.contains(e.target) && e.target !== editor && e.target !== blatt && e.target !== svg) return false;
+  const [x, y] = posAufBlatt(e);
+  const ed = editor.getBoundingClientRect(), bl = blatt.getBoundingClientRect();
+  if (e.clientX < ed.left - 2 || e.clientX > ed.right + 2) return true;      // im Seitenrand
+  if (e.clientY > ed.bottom) return true;                                    // unter dem Text
+  const b = blockAnHoehe(y); if (!b) return true;
+  if (istPlatz(b)) return true;
+  const r = document.caretRangeFromPoint(e.clientX, e.clientY); if (!r) return true;
+  let rect = r.getClientRects()[0];
+  if (!rect) { const t = r.startContainer; if (t.nodeType === 3 && t.length) { const q = document.createRange(); const o = Math.min(r.startOffset, t.length - 1); q.setStart(t, o); q.setEnd(t, o + 1); rect = q.getBoundingClientRect(); } else rect = (t.nodeType === 1 ? t : t.parentNode).getBoundingClientRect(); }
+  const leerAbsatz = !b.textContent.trim() && !b.querySelector("img");
+  if (leerAbsatz) return true;
+  return Math.abs(rect.left - e.clientX) > 18 || e.clientY < rect.top - 6 || e.clientY > rect.bottom + 6;
+}
+let ziehen = null;
+blatt.addEventListener("mousedown", e => {
+  if (werkzeug !== "tippen" || e.button !== 0) return;
+  if (e.target.closest("#tinte-eingabe")) return;
+  const [x, y] = posAufBlatt(e);
+  const feld = textfeldBei(x, y);
+  if (feld) { e.preventDefault(); ziehen = { s: feld, x0: x, y0: y, bewegt: false, schnapp: null }; return; }
+  if (istPlatz(e.target)) { e.preventDefault(); textEingabeStart(x, y, { groesse: 15, farbe: "#1F2328" }); }
+}, true);
+window.addEventListener("mousemove", e => {
+  if (werkzeug === "tippen" && !ziehen) { const [x, y] = posAufBlatt(e); document.body.classList.toggle("ueber-textfeld", !!textfeldBei(x, y)); }
+  if (!ziehen) return;
+  const [x, y] = posAufBlatt(e), dx = x - ziehen.x0, dy = y - ziehen.y0;
+  if (!ziehen.bewegt && Math.hypot(dx, dy) < 4) return;
+  if (!ziehen.bewegt) { merken("verschieben"); ziehen.bewegt = true; ziehen.start = { x: ziehen.s.x, dy: ziehen.s.dy }; }
+  ziehen.s.x = Math.max(0, ziehen.start.x + dx); ziehen.s.dy = ziehen.start.dy + dy; zeichneAlles();
+});
+window.addEventListener("mouseup", e => {
+  if (!ziehen) return;
+  const z = ziehen; ziehen = null;
+  if (z.bewegt) {
+    // nach dem Verschieben am neuen Absatz verankern
+    const g = absGrenzen(z.s), b = blockAnHoehe(g.y0) || editor.firstElementChild, altOben = ankerOben(z.s), neuOben = oben(b);
+    z.s.dy += altOben - neuOben; z.s.anker = b.dataset.b; z.s.letzteOben = neuOben;
+    platzSichern(z.s); layout(); geaendert();
+  } else { const g = absGrenzen(z.s); textEingabeStart(z.s.x + 2, g.y0 + 4); }
+});
+blatt.addEventListener("dblclick", e => {
+  if (werkzeug !== "tippen" || !freieStelle(e)) return;
+  e.preventDefault(); getSelection().removeAllRanges();
+  const [x, y] = posAufBlatt(e);
+  textEingabeStart(x, y, { groesse: 15, farbe: "#1F2328" });
+});
 
 /* Layout-Änderungen beobachten */
 editor.addEventListener("input", e => {
@@ -1126,7 +1236,7 @@ function dateiname(fach, datum, thema) {
 /* Zeichnungen zu Gruppen zusammenfassen (z. B. eine Mindmap = ein Ausschnitt) */
 function gruppen() {
   const items = striche.map(s => ({ s, g: absGrenzen(s) }));
-  const LUECKE = 36, teile = items.map((_, i) => i);
+  const LUECKE = 64, teile = items.map((_, i) => i);
   const wurzel = i => teile[i] === i ? i : (teile[i] = wurzel(teile[i]));
   for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
     const a = items[i].g, b = items[j].g;
@@ -1264,6 +1374,7 @@ function cursorAnsEnde() { editor.focus({ preventScroll: true }); const r = docu
   } else { fuelleFaecher("EBC"); $("#datum").value = heute(); editor.innerHTML = "<p><br></p>"; $("#status").textContent = "bereit"; }
   layout(); cursorAnsEnde();
   if (!API.desktop) meldung("Tipp: In der Desktop-App funktioniert alles am besten.", 4000);
+  else if (!e.hinweisFreiSchreiben) { setTimeout(() => meldung("Neu: Doppelklick auf eine freie Stelle → dort schreiben. Textfelder kannst du mit der Maus verschieben.", 7000), 1200); API.einstellungSetzen("hinweisFreiSchreiben", true); }
 })();
 </script>
 </body>

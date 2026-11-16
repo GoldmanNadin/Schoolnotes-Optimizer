@@ -15,7 +15,7 @@ const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType,
   BorderStyle, AlignmentType, HeadingLevel, ImageRun, Footer, PageNumber, PositionalTab,
   PositionalTabAlignment, PositionalTabRelativeTo, PositionalTabLeader, LevelFormat, Bookmark,
-  InternalHyperlink, LineRuleType, TableLayoutType,
+  InternalHyperlink, LineRuleType, TableLayoutType, Tab,
 } = require("docx");
 const JSZip = require("jszip");
 
@@ -54,13 +54,20 @@ const BREITE = SEITE_B - 2 * RAND;                // 9638 DXA ≈ 17 cm
 const FONT = "Arial";
 
 /* ---------------- Text mit **fett**, *kursiv*, ==markiert==, __unterstrichen__ ---------------- */
+// Textstück; \t wird zu einem echten Word-Tabulator
+function lauf(text, basis) {
+  if (!text.includes("\t")) return new TextRun({ text, ...basis });
+  const kinder = [];
+  text.split("\t").forEach((teil, i) => { if (i) kinder.push(new Tab()); if (teil) kinder.push(teil); });
+  return new TextRun({ ...basis, children: kinder });
+}
 function laeufe(text, basis = {}) {
   const out = [];
   const s = String(text ?? "");
   const re = /(\*\*[^*]+?\*\*|==[^=]+?==|__[^_]+?__|\*[^*\s][^*]*?\*)/g;
   let pos = 0, m;
   while ((m = re.exec(s))) {
-    if (m.index > pos) out.push(new TextRun({ text: s.slice(pos, m.index), ...basis }));
+    if (m.index > pos) out.push(lauf(s.slice(pos, m.index), basis));
     const t = m[0];
     // verschachtelt erlaubt, z. B. **fett mit ==Markierung==**
     if (t.startsWith("**")) out.push(...laeufe(t.slice(2, -2), { ...basis, bold: true }));
@@ -69,7 +76,7 @@ function laeufe(text, basis = {}) {
     else out.push(...laeufe(t.slice(1, -1), { ...basis, italics: true }));
     pos = m.index + t.length;
   }
-  if (pos < s.length) out.push(new TextRun({ text: s.slice(pos), ...basis }));
+  if (pos < s.length) out.push(lauf(s.slice(pos), basis));
   return out;
 }
 const absatzText = (text, opt = {}) => String(text ?? "").split("\n").map(z => new Paragraph({ children: laeufe(z, opt.run), ...(opt.para || {}) }));
@@ -210,11 +217,19 @@ const T = sprache === "en"
   ? { merke: "Remember", beispiel: "Example", achtung: "Important", zusammenfassung: "In a nutshell", uebersicht: "Overview", stunde: "Lesson", datum: "Date", thema: "Topic" }
   : { merke: "Merke", beispiel: "Beispiel", achtung: "Achtung", zusammenfassung: "Kurz zusammengefasst", uebersicht: "Übersicht", stunde: "Nr.", datum: "Datum", thema: "Thema" };
 
+const AUSRICHTUNG = { mitte: AlignmentType.CENTER, zentriert: AlignmentType.CENTER, rechts: AlignmentType.RIGHT, blocksatz: AlignmentType.JUSTIFIED, links: AlignmentType.LEFT };
+function absatzOpt(b) {
+  const o = {};
+  if (b.ausrichtung && AUSRICHTUNG[b.ausrichtung]) o.alignment = AUSRICHTUNG[b.ausrichtung];
+  if (b.einzug_cm) o.indent = { left: Math.round(Number(b.einzug_cm) * 567) };
+  // Tabulatoren (\t im Text) springen wie in Word auf Tabstopps alle 1,25 cm
+  return o;
+}
 function baustein(b) {
   switch (b.typ) {
-    case "abschnitt": return [new Paragraph({ heading: HeadingLevel.HEADING_2, children: laeufe(b.text) })];
-    case "unterabschnitt": return [new Paragraph({ heading: HeadingLevel.HEADING_3, children: laeufe(b.text) })];
-    case "text": return absatzText(b.text);
+    case "abschnitt": return [new Paragraph({ heading: HeadingLevel.HEADING_2, ...absatzOpt(b), children: laeufe(b.text) })];
+    case "unterabschnitt": return [new Paragraph({ heading: HeadingLevel.HEADING_3, ...absatzOpt(b), children: laeufe(b.text) })];
+    case "text": return absatzText(b.text, { para: absatzOpt(b) });
     case "liste": return [...liste(b.punkte, false), abstand(4)];
     case "nummern": return [...liste(b.punkte, true), abstand(4)];
     case "tabelle": return tabelle(b);

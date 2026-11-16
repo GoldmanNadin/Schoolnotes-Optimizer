@@ -1,7 +1,7 @@
 {
   "name": "schoolnotes-optimizer",
   "productName": "Notizblock",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Unterrichts-Notizblock: schreiben, direkt im Text zeichnen, Bilder einfügen – und per Klick an Claude übergeben",
   "main": "desktop/main.js",
   "author": "GoldmanNadin",

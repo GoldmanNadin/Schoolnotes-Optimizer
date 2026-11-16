@@ -24,6 +24,8 @@ LEGENDE = """<!-- Legende der Markierungen:
 [MERKE-KASTEN] ... [/MERKE-KASTEN]   = von der Schülerin als „Merke“ markiert (wichtig!)
 [BEISPIEL-KASTEN] ... [/BEISPIEL-KASTEN]  = als Beispiel markiert
 [ZITAT] ... [/ZITAT]                   = Zitat / Definition
+⇥                                      = Tab-Taste (Abstand/Einrückung, oft für Spalten wie „Begriff ⇥ Erklärung“)
+[zentriert] / [rechtsbündig] / [Blocksatz] / [eingerückt]  = so hat sie den Absatz ausgerichtet
 [HANDSCHRIFT n: datei | ...]           = direkt aufs Blatt gezeichnet/geschrieben (Mindmap, Pfeile, Kreise,
                                          Notizen). Der Ausschnitt zeigt auch den Text darunter -> UNBEDINGT ansehen!
 [ZEICHNUNG n: datei | Breite x%]       = mit der Maus gezeichnet -> Bild ansehen!
@@ -127,11 +129,13 @@ class Leser(HTMLParser):
                 self.puffer = {"h1": "## ", "h2": "### "}.get(tag, "#### ")
             else:
                 self.puffer = "## " if tag in ("h1", "h2") else "### "
+            self.puffer += ausrichtung(a)
         elif tag == "p" and "bildquelle" in (a.get("class") or ""):
             self.zeile_beenden(); self.puffer = "(Bildquelle) "
         elif tag in ("p", "div"):
             if self.zelle is None:
                 self.zeile_beenden()
+                self.puffer = ausrichtung(a)
             else:
                 if self.zelle:
                     self.zelle.append(" / ")
@@ -239,7 +243,7 @@ class Leser(HTMLParser):
     def handle_data(self, data):
         if not self.in_main or self.ignorieren:
             return
-        text = re.sub(r"\s+", " ", data)
+        text = re.sub(r"[ \n\r\f\v]+", " ", data).replace("\t", " ⇥ ")
         if not text.strip() and not self.puffer and self.zelle is None:
             return
         self.schreibe(text)
@@ -270,6 +274,20 @@ class Leser(HTMLParser):
             self.zelle.append(" " + info + " ")
         else:
             self.zeile_beenden(); self.zeilen.append(info)
+
+
+def ausrichtung(attrs):
+    stil = (attrs.get("style") or "").replace(" ", "")
+    m = ""
+    if "text-align:center" in stil:
+        m += "[zentriert] "
+    elif "text-align:right" in stil:
+        m += "[rechtsbündig] "
+    elif "text-align:justify" in stil:
+        m += "[Blocksatz] "
+    if re.search(r"margin-left:[1-9]", stil):
+        m += "[eingerückt] "
+    return m
 
 
 def roemisch(n):

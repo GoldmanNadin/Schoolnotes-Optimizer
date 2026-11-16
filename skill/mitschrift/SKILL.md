@@ -62,7 +62,7 @@ python "SKILL/scripts/export_lesen.py" auspacken "<export.html>" "<Fach>/_Mitsch
   ein Wort, Pfeile zwischen Begriffen, Kreise, Randnotizen). Der Ausschnitt zeigt die Zeichnung
   **zusammen mit dem getippten Text darunter**; „berührt den Text“ sagt, zu welchen Absätzen sie
   gehört, „aufs Blatt geschriebene Wörter“ sind getippte Beschriftungen. Bedeutung erschließen und
-  einbauen (siehe Gestaltungsregel 7).
+  einbauen (siehe Gestaltungsregel 8).
 - `(Bildquelle) …` bzw. „Quelle:“ bei einem Bild aus dem Internet → als Bildunterschrift übernehmen
   (Lizenzangabe gehört dazu).
 - Bilder, die ins Dokument sollen, nach `<Fach>/_Mitschrift-Daten/bilder/` kopieren mit
@@ -157,14 +157,18 @@ verfügbar ist, diesen Schritt auslassen.)
    „kommt zum Test“ → `achtung`. Formeln → `formel` (mit Erklärung der Variablen).
 6. Zeichnungen und Bilder → `bild` mit Bildunterschrift an der passenden Stelle. Steckt in einer
    Skizze Inhalt (z. B. ein Ablauf), diesen zusätzlich kurz in Worten oder als Tabelle erklären.
-7. **Handschrift (`[HANDSCHRIFT …]`):** Den Inhalt immer in den Text übernehmen – eine Mindmap
+7. **Tabs und Ausrichtung:** Mit `⇥` (Tab) baut sie oft Spalten („Begriff ⇥ Erklärung“) → daraus
+   eine `tabelle` oder `begriffe` machen. `[zentriert]`/`[rechtsbündig]` übernehmen, wenn es etwas
+   bedeutet (z. B. zentrierte Formel oder Merksatz → `ausrichtung: "mitte"`); Überschriften bleiben
+   im einheitlichen Design. `[eingerückt]` = gehört zum Absatz darüber (Unterpunkt/Erklärung).
+8. **Handschrift (`[HANDSCHRIFT …]`):** Den Inhalt immer in den Text übernehmen – eine Mindmap
    um „Internet“ mit „WWW“, „E-Mail“, „FTP“ wird z. B. eine Liste „Dienste des Internets“ (mit
    Unterpunkten) oder eine Tabelle; Pfeile werden zu „→“-Beziehungen; eingekreiste/unterstrichene
    Wörter sind wichtig (→ hervorheben). Ist es eine echte Skizze/Mindmap, zusätzlich den Ausschnitt
    als `bild` einfügen (Unterschrift z. B. „Mindmap aus dem Unterricht“). Nur Unterstreichungen,
    Kreise oder Häkchen → kein Bild nötig, nur hervorheben.
-8. Ab 3 neuen Fachbegriffen am Ende: `begriffe` („Wichtige Begriffe“).
-9. Zum Schluss immer: `zusammenfassung` mit 3–5 Punkten.
+9. Ab 3 neuen Fachbegriffen am Ende: `begriffe` („Wichtige Begriffe“).
+10. Zum Schluss immer: `zusammenfassung` mit 3–5 Punkten.
 
 **Aussehen** (macht das Skript automatisch – nicht von Hand nachbauen)
 - Jedes Fach hat eine eigene Farbe (`SKILL/faecher.json`): Überschriften, Kästen,
@@ -181,9 +185,9 @@ neu bauen und mit der Vorschau kontrollieren. Neues Fach: Zeile in `faecher.json
 
 | typ | Felder | Wofür |
 |---|---|---|
-| `abschnitt` | `text` | Überschrift 1. Ebene in der Stunde („1. Grundbegriffe“) |
+| `abschnitt` | `text`, optional `ausrichtung` | Überschrift 1. Ebene in der Stunde („1. Grundbegriffe“) |
 | `unterabschnitt` | `text` | Überschrift 2. Ebene |
-| `text` | `text` | Absatz (Zeilenumbruch `\n` = neuer Absatz) |
+| `text` | `text`, optional `ausrichtung` ("mitte" / "rechts" / "blocksatz"), `einzug_cm` | Absatz (Zeilenumbruch `\n` = neuer Absatz, `\t` = Tab) |
 | `liste` | `punkte`: Liste aus Text oder `{ "text": "…", "unterpunkte": [ … ] }` | Aufzählung |
 | `nummern` | `punkte` (wie oben) | nummerierte Schritte |
 | `tabelle` | `kopf`: [..], `zeilen`: [[..],[..]], optional `breiten`: [30,70] (Prozent), `unterschrift`, `erste_spalte_fett` (Standard true) | Vergleiche |
