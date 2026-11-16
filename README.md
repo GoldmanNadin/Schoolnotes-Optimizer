@@ -31,6 +31,10 @@ Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShel
   **I. II. III.** – mit Unterebenen (Tab / Umschalt+Tab)
 - Wie in Word: „- “ oder „1. “ am Zeilenanfang startet automatisch eine Liste,
   zweimal Enter beendet sie
+- **Tab-Taste wie in Word**: springt auf Tabstopps (alle 1,25 cm) – gut für Spalten wie „Begriff ⇥ Erklärung“
+- Ausrichtung **links, zentriert, rechts, Blocksatz** (Strg+L / E / R / J), Einzug vergrößern/verkleinern
+- **Überall schreiben**: Doppelklick auf eine freie Stelle → dort ein Textfeld (z. B. um Pfeile zu
+  beschriften). Textfelder anklicken = bearbeiten, mit der Maus ziehen = verschieben
 - Fett, kursiv, unterstrichen, Textfarben, Textmarker, Tabellen (Tab springt zur nächsten Zelle)
 - Rechtschreibprüfung mit Vorschlägen per Rechtsklick
 
