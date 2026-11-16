@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" width="640" height="300" font-family="Arial, sans-serif">
+  <defs><marker id="spitze" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1F7A5C"/></marker></defs>
+  <rect width="640" height="300" fill="#fff"/>
+  <g stroke="#1F7A5C" stroke-width="2.5" fill="none" marker-end="url(#spitze)">
+    <line x1="320" y1="128" x2="150" y2="62"/>
+    <line x1="320" y1="128" x2="490" y2="62"/>
+    <line x1="320" y1="172" x2="320" y2="232"/>
+  </g>
+  <rect x="250" y="126" width="140" height="48" rx="24" fill="#E8F3EF" stroke="#1F7A5C" stroke-width="2.5"/>
+  <text x="320" y="157" text-anchor="middle" font-size="19" font-weight="700" fill="#174F3C">Internet</text>
+  <g font-size="17" fill="#262626" text-anchor="middle">
+    <rect x="80" y="26" width="120" height="36" rx="8" fill="#fff" stroke="#9AA3AE" stroke-width="1.5"/><text x="140" y="50">WWW</text>
+    <rect x="440" y="26" width="120" height="36" rx="8" fill="#fff" stroke="#9AA3AE" stroke-width="1.5"/><text x="500" y="50">E-Mail</text>
+    <rect x="260" y="236" width="120" height="36" rx="8" fill="#fff" stroke="#9AA3AE" stroke-width="1.5"/><text x="320" y="260">FTP</text>
+  </g>
+</svg>

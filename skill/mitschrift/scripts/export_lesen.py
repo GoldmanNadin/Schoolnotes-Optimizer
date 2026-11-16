@@ -344,9 +344,22 @@ def auspacken(datei, ziel):
                       "bilder": [str(ziel / b["datei"]) for b in leser.bilder]}, ensure_ascii=False, indent=2))
 
 
+def notizblock_eingang():
+    """Den Ordner, den die Schülerin im Notizblock als Speicherort gewählt hat."""
+    basis = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+    try:
+        e = json.loads((Path(basis) / "Notizblock" / "einstellungen.json").read_text(encoding="utf-8")).get("eingang")
+        return Path(e) if e and Path(e).is_dir() else None
+    except (OSError, ValueError):
+        return None
+
+
 def eingangsordner(start):
     start = Path(start).resolve()
     gefunden = []
+    gewaehlt = notizblock_eingang()
+    if gewaehlt:
+        gefunden.append(gewaehlt)
     kandidaten = [start] + list(start.parents)[:3]
     for k in kandidaten:
         for ordner in [k / "_Eingang"] + [p / "_Eingang" for p in sorted(k.iterdir()) if p.is_dir()] if k.is_dir() else []:

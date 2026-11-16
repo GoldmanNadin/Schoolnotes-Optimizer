@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("notizblock", {
   einstellungen: () => ipcRenderer.invoke("einstellungen:laden"),
   einstellungSetzen: (k, v) => ipcRenderer.invoke("einstellungen:setzen", k, v),
   eingangWaehlen: () => ipcRenderer.invoke("eingang:waehlen"),
+  eingangSetzen: ordner => ipcRenderer.invoke("eingang:setzen", ordner),
   eingangOeffnen: () => ipcRenderer.invoke("eingang:oeffnen"),
   exportSpeichern: (name, html) => ipcRenderer.invoke("export:speichern", name, html),
   ausschnitte: daten => ipcRenderer.invoke("export:ausschnitte", daten),

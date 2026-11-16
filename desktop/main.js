@@ -35,32 +35,47 @@ function schreiben(datei, daten) {
 const einstellungen = () => lesen(DATEI.einstellungen, {});
 const einstellungSetzen = (k, v) => { const e = einstellungen(); e[k] = v; schreiben(DATEI.einstellungen, e); };
 
-/* Eingangsordner automatisch finden: <OneDrive>/Schule/<Schuljahr>/_Eingang (neuestes Schuljahr) */
+/* Speicherort für Claude.
+ * Gespeichert wird immer in einen Ordner „_Eingang“. Wählt man den Schuljahres-Ordner
+ * (z. B. Schule/2026_27), wird darin automatisch „_Eingang“ angelegt – so findet Claude die
+ * Fach-Ordner daneben. Die Wahl steht in einstellungen.json (liest auch der Skill). */
 function eingangFinden() {
   if (process.env.NOTIZBLOCK_EINGANG) return process.env.NOTIZBLOCK_EINGANG;
   const gespeichert = einstellungen().eingang;
-  if (gespeichert && fs.existsSync(gespeichert)) return gespeichert;
+  if (gespeichert) { try { fs.mkdirSync(gespeichert, { recursive: true }); return gespeichert; } catch { } }
+  return null;
+}
+/* Vorschlag: neuestes Schuljahr unter <OneDrive>/Schule */
+function eingangVorschlag() {
   const wurzeln = [process.env.OneDriveCommercial, process.env.OneDrive, path.join(os.homedir(), "OneDrive"), path.join(os.homedir(), "Documents")].filter(Boolean);
   for (const w of wurzeln) {
     const schule = path.join(w, "Schule");
     if (!fs.existsSync(schule)) continue;
     const jahre = fs.readdirSync(schule).filter(n => /^\d{4}_\d{2}$/.test(n)).sort().reverse();
-    for (const j of jahre) {
-      const e = path.join(schule, j, "_Eingang");
-      if (fs.existsSync(e)) { einstellungSetzen("eingang", e); return e; }
-    }
+    if (jahre.length) return path.join(schule, jahre[0], "_Eingang");
+    return path.join(schule, "_Eingang");
   }
-  return null;
+  return path.join(os.homedir(), "Documents", "Schule", "_Eingang");
+}
+function alsEingang(ordner) {
+  return /^_eingang/i.test(path.basename(ordner)) ? ordner : path.join(ordner, "_Eingang");
+}
+function eingangSetzen(ordner) {
+  const e = alsEingang(ordner);
+  fs.mkdirSync(e, { recursive: true });
+  einstellungSetzen("eingang", e); einstellungSetzen("eingangBestaetigt", true);
+  return e;
 }
 async function eingangWaehlen(fenster) {
+  const jetzt = eingangFinden() || eingangVorschlag();
   const r = await dialog.showOpenDialog(fenster, {
-    title: "Ordner _Eingang wählen (Schule › Schuljahr › _Eingang)",
+    title: "Schuljahres-Ordner wählen (der Ordner mit deinen Fächern, z. B. Schule › 2026_27)",
+    buttonLabel: "Diesen Ordner verwenden",
     properties: ["openDirectory", "createDirectory"],
-    defaultPath: process.env.OneDriveCommercial || process.env.OneDrive || os.homedir(),
+    defaultPath: path.dirname(jetzt),
   });
   if (r.canceled || !r.filePaths[0]) return null;
-  einstellungSetzen("eingang", r.filePaths[0]);
-  return r.filePaths[0];
+  return eingangSetzen(r.filePaths[0]);
 }
 
 /* ---------------- Fenster ---------------- */
@@ -134,7 +149,8 @@ ipcMain.handle("entwurf:speichern", (_e, d) => { schreiben(DATEI.entwurf, d); re
 ipcMain.on("entwurf:speichern-sofort", (e, d) => { try { schreiben(DATEI.entwurf, d); e.returnValue = true; } catch { e.returnValue = false; } });
 ipcMain.handle("letzte:laden", () => lesen(DATEI.letzte));
 ipcMain.handle("letzte:speichern", (_e, d) => { schreiben(DATEI.letzte, d); return true; });
-ipcMain.handle("einstellungen:laden", () => ({ ...einstellungen(), eingang: eingangFinden() }));
+ipcMain.handle("einstellungen:laden", () => ({ ...einstellungen(), eingang: eingangFinden(), vorschlag: eingangVorschlag(), test: !!process.env.NOTIZBLOCK_EINGANG }));
+ipcMain.handle("eingang:setzen", (_e, ordner) => eingangSetzen(ordner));
 ipcMain.handle("einstellungen:setzen", (_e, k, v) => { einstellungSetzen(k, v); return true; });
 
 /* ---------------- Export ---------------- */

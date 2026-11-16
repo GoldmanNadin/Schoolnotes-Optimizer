@@ -56,7 +56,7 @@ Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShel
 
 1. **Notizblock** auf dem Desktop öffnen, Fach + Thema wählen, mitschreiben und zeichnen.
 2. Am Ende: **„Stunde beenden → Claude“**. Die Stunde landet automatisch in
-   `OneDrive › Schule › <neuestes Schuljahr> › _Eingang` (änderbar unter „⋯ Mehr“).
+   den Ordner, den du beim ersten Start wählst (oben über den 📁-Knopf jederzeit änderbar).
 3. In der **Claude-App** (Ordner `Schule/<Schuljahr>`) eintippen: **`/mitschrift`**.
 
 Claude bekommt den Text **und** Ausschnitte deiner Zeichnungen samt dem Text darunter – so
@@ -70,7 +70,7 @@ Voraussetzung: Python und Node.js.
 ## Design anpassen
 
 - **Farben pro Fach:** [`skill/mitschrift/faecher.json`](skill/mitschrift/faecher.json)
-- **Gestaltungsregeln** (Merke-Kästen, Zusammenfassung, Umgang mit Zeichnungen …):
+- **Gestaltungsregeln** (wortgetreu, nichts dazuschreiben, Zeichnungen sauber nachzeichnen …):
   [`skill/mitschrift/SKILL.md`](skill/mitschrift/SKILL.md)
 - Oder einfach Claude sagen: *„Mach Mathe lila“*. Danach `skill/installieren.ps1` nochmal ausführen.
 

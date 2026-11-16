@@ -29,6 +29,9 @@ button{cursor:pointer}
 #thema{width:260px}
 .abstand{flex:1}
 #status{font-size:12px;color:var(--leise);white-space:nowrap;align-self:center}
+#speicherort{font-size:12.5px;color:#4B5563;max-width:280px}
+#speicherort span{overflow:hidden;text-overflow:ellipsis}
+.ort-pfad{background:#F3F4F6;border:1px solid var(--linie);border-radius:8px;padding:8px 10px;font-family:Consolas,monospace;font-size:12.5px;word-break:break-all;margin:8px 0}
 .knopf{border:1px solid var(--linie);background:#fff;border-radius:8px;padding:0 12px;height:34px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .knopf:hover{background:#F4F5F7}
 .knopf-haupt{background:var(--akzent);border-color:var(--akzent);color:#fff;font-weight:600}
@@ -168,6 +171,7 @@ ol.schritte li{margin:4px 0}
     <div class="feld"><label for="thema">Thema der Stunde</label><input id="thema" type="text" placeholder="z. B. Das Internet (optional)"></div>
     <div class="feld"><label for="datum">Datum</label><input id="datum" type="date"></div>
     <div class="abstand"></div>
+    <button class="knopf" id="speicherort" title="Hier speichert „Stunde beenden“ deine Stunden für Claude – klicken zum Ändern">📁 <span id="ort-text">Speicherort wählen</span></button>
     <span id="status">–</span>
     <button class="knopf" id="mehr">⋯ Mehr</button>
     <button class="knopf knopf-haupt" id="fertig">Stunde beenden → Claude</button>
@@ -348,6 +352,20 @@ ol.schritte li{margin:4px 0}
     <p id="m-info" style="color:var(--leise);font-size:12.5px;margin-top:14px"></p>
     <p style="color:var(--leise);font-size:12.5px">Tastenkürzel: Strg+Alt+1/2/3 Überschriften · Strg+Umschalt+N Standard · Strg+Umschalt+L Aufzählung · Strg+L/E/R/J links/zentriert/rechts/Blocksatz · Doppelklick auf freie Stelle = dort schreiben · „- “ oder „1. “ am Zeilenanfang startet eine Liste · Tab/Umschalt+Tab ein-/ausrücken · Strg+Mausrad/Strg+± Zoom</p>
     <div class="knoepfe"><button class="knopf" data-schliessen>Schließen</button></div>
+  </div>
+</div>
+
+<!-- Speicherort -->
+<div class="dialog-hg" id="ort-hg">
+  <div class="dialog" role="dialog">
+    <h2>📁 Wo sollen deine Stunden gespeichert werden?</h2>
+    <p>Wenn du auf <b>„Stunde beenden → Claude“</b> klickst, landet die Stunde in diesem Ordner. Von dort holt Claude sie mit <span class="code">/mitschrift</span> ab.</p>
+    <div class="ort-pfad" id="ort-pfad"></div>
+    <p style="font-size:13px;color:var(--leise)">Tipp: Wähle den Ordner deines <b>Schuljahres</b> (der, in dem deine Fächer-Ordner wie „EBC“ oder „Mathe“ liegen). Darin wird automatisch ein Unterordner <b>„_Eingang“</b> angelegt. Ändern kannst du das jederzeit oben über den 📁-Knopf.</p>
+    <div class="knoepfe">
+      <button class="knopf" id="ort-anderer">Anderen Ordner wählen …</button>
+      <button class="knopf knopf-haupt" id="ort-ok">Ja, hier speichern</button>
+    </div>
   </div>
 </div>
 
@@ -1316,6 +1334,7 @@ async function exportieren(themaGefragt = false) {
   if (!editor.textContent.trim() && !editor.querySelector("img,table") && !striche.length) { meldung("Du hast noch nichts geschrieben."); return; }
   if (!$("#thema").value.trim() && !themaGefragt) { dialog("#thema-hg"); setTimeout(() => $("#thema-frage").focus(), 30); return; }
   if (!$("#datum").value) $("#datum").value = heute();
+  if (API.desktop) { const ein = await API.einstellungen(); if (!ein.eingang) { ortDialog(() => exportieren(true)); return; } }
   $("#fertig").disabled = true; $("#status").textContent = "… wird übergeben";
   try {
     const e = await exportHTML();
@@ -1350,7 +1369,19 @@ $("#m-letzte").onclick = async () => {
   fuelleFaecher(l.fach); $("#thema").value = l.thema || ""; $("#datum").value = l.datum || heute(); editor.innerHTML = l.html || "<p><br></p>"; striche = l.striche || [];
   await API.letzteSpeichern(jetzt); layout(); await speichern(); dialog("#mehr-hg", false); meldung("Wiederhergestellt ✓");
 };
-$("#m-ordner").onclick = async () => { const o = await API.eingangWaehlen(); if (o) { meldung("Speicherort: " + o); dialog("#mehr-hg", false); } };
+/* Speicherort für Claude */
+const kurzPfad = p => (p || "").split(/[\\/]/).filter(Boolean).slice(-3).join(" › ");
+function ortAnzeigen(p) { $("#ort-text").textContent = p ? kurzPfad(p) : "Speicherort wählen"; $("#speicherort").title = (p ? p + "\n\n" : "") + "Hier speichert „Stunde beenden“ deine Stunden für Claude – klicken zum Ändern"; }
+let ortVorschlag = null, ortDanach = null;
+async function ortDialog(danach = null) {
+  const e = await API.einstellungen(); ortVorschlag = e.eingang || e.vorschlag; ortDanach = danach;
+  $("#ort-pfad").textContent = ortVorschlag || "(noch kein Ordner)"; dialog("#ort-hg");
+}
+async function ortWaehlen() { const o = await API.eingangWaehlen(); if (o) { ortAnzeigen(o); meldung("Gespeichert wird jetzt in: " + kurzPfad(o)); } return o; }
+$("#speicherort").onclick = () => API.desktop ? ortDialog() : meldung("Die Browser-Version speichert immer in „Downloads“.");
+$("#ort-ok").onclick = async () => { if (!ortVorschlag) { const o = await ortWaehlen(); if (!o) return; } else ortAnzeigen(await API.eingangSetzen(ortVorschlag.replace(/[\\/]_Eingang$/i, ""))); dialog("#ort-hg", false); const d = ortDanach; ortDanach = null; if (d) d(); };
+$("#ort-anderer").onclick = async () => { const o = await ortWaehlen(); if (!o) return; dialog("#ort-hg", false); const d = ortDanach; ortDanach = null; if (d) d(); };
+$("#m-ordner").onclick = () => { dialog("#mehr-hg", false); ortDialog(); };
 $("#m-fach").onclick = async () => {
   const n = (prompt("Name des Fachs (genau wie der Ordner, z. B. „Geschichte“):") || "").trim(); if (!n) return;
   if (!alleFaecher().some(f => f[0] === n)) { eigeneFaecher.push([n, "#455A64"]); await API.einstellungSetzen("eigeneFaecher", eigeneFaecher); }
@@ -1374,6 +1405,8 @@ function cursorAnsEnde() { editor.focus({ preventScroll: true }); const r = docu
   } else { fuelleFaecher("EBC"); $("#datum").value = heute(); editor.innerHTML = "<p><br></p>"; $("#status").textContent = "bereit"; }
   layout(); cursorAnsEnde();
   if (!API.desktop) meldung("Tipp: In der Desktop-App funktioniert alles am besten.", 4000);
+  ortAnzeigen(e.eingang);
+  if (API.desktop && !e.eingangBestaetigt && !e.test) setTimeout(() => ortDialog(), 400);
   else if (!e.hinweisFreiSchreiben) { setTimeout(() => meldung("Neu: Doppelklick auf eine freie Stelle → dort schreiben. Textfelder kannst du mit der Maus verschieben.", 7000), 1200); API.einstellungSetzen("hinweisFreiSchreiben", true); }
 })();
 </script>
