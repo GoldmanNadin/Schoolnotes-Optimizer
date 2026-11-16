@@ -1,0 +1,16 @@
+{
+  "_hinweis": "Schlüssel = Ordnername des Fachs. name = Titel im Word-Dokument. farbe = Hauptfarbe (Hex). Hellere Töne werden automatisch berechnet. Neues Fach? Einfach eine Zeile ergänzen.",
+  "BUNW":               { "name": "BUNW",                 "farbe": "#2F855A" },
+  "BW":                 { "name": "Betriebswirtschaft",   "farbe": "#1F3A68" },
+  "Business Behaviour": { "name": "Business Behaviour",   "farbe": "#7B4B94" },
+  "Deutsch":            { "name": "Deutsch",              "farbe": "#B23A48" },
+  "EBC":                { "name": "EBC",                  "farbe": "#1F7A5C" },
+  "Englisch":           { "name": "Englisch",             "farbe": "#3949AB", "sprache": "en" },
+  "IMCM":               { "name": "IMCM",                 "farbe": "#C8741A" },
+  "Mathe":              { "name": "Mathematik",           "farbe": "#1565C0" },
+  "NW":                 { "name": "Naturwissenschaften",  "farbe": "#5A8A2F" },
+  "OMAI":               { "name": "OMAI",                 "farbe": "#00838F" },
+  "PBGW":               { "name": "PBGW",                 "farbe": "#6D4C41" },
+  "UR":                 { "name": "UR",                   "farbe": "#455A64" },
+  "_standard":          { "name": null,                   "farbe": "#455A64" }
+}

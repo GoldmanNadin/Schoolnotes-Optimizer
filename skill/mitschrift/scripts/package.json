@@ -1,0 +1,11 @@
+{
+  "name": "mitschrift-word",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Erstellt die gestalteten Word-Mitschriften aus mitschrift.json",
+  "main": "word_erstellen.js",
+  "dependencies": {
+    "docx": "^9.5.0",
+    "jszip": "^3.10.1"
+  }
+}

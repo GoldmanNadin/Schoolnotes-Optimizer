@@ -1,0 +1,59 @@
+{
+  "fach": "EBC",
+  "datei": "Mitschrift.docx",
+  "untertitel": "Mitschrift · Schuljahr 2026/27",
+  "stunden": [
+    {
+      "datum": "2026-11-09",
+      "thema": "Netzwerke – Grundlagen",
+      "quelle": "Mitschrift_EBC_2026-11-09_Netzwerke.html",
+      "einleitung": "In dieser Stunde ging es darum, was ein Netzwerk ist und wie Daten übertragen werden.",
+      "bloecke": [
+        { "typ": "abschnitt", "text": "1. Was ist ein Netzwerk?" },
+        { "typ": "text", "text": "Ein **Netzwerk** verbindet mehrere Geräte, damit sie Daten austauschen und Ressourcen (z. B. einen Drucker) gemeinsam nutzen können." },
+        { "typ": "nummern", "punkte": ["Gerät schickt Daten an den Router", { "text": "Router entscheidet, wohin die Daten gehen", "unterpunkte": ["im eigenen Netz → direkt zum Gerät", "nach außen → ins Internet"] }, "Empfänger bestätigt den Empfang"] },
+        { "typ": "achtung", "text": "**LAN** und **WLAN** nicht verwechseln: WLAN ist ein LAN *ohne Kabel* (Funk)." },
+        { "typ": "zusammenfassung", "punkte": ["Netzwerke verbinden Geräte zum Datenaustausch.", "Der Router leitet Daten weiter.", "WLAN = kabelloses LAN."] }
+      ]
+    },
+    {
+      "datum": "2026-11-16",
+      "thema": "Das Internet",
+      "quelle": "Mitschrift_EBC_2026-11-16_Das-Internet.html",
+      "einleitung": "Diese Stunde erklärt, was man für einen Internetanschluss braucht, wie Client und Server zusammenarbeiten und welche Grundbegriffe wichtig sind.",
+      "bloecke": [
+        { "typ": "abschnitt", "text": "1. Was brauche ich für einen Internetanschluss?" },
+        { "typ": "text", "text": "Damit ein Gerät ins Internet kommt, müssen vier Dinge zusammenspielen:" },
+        { "typ": "liste", "punkte": [
+          "**Device** – das Gerät selbst, z. B. PC, Laptop oder Handy.",
+          { "text": "**BS (Betriebssystem)** – das Grundprogramm des Geräts, z. B. Windows oder Android.", "unterpunkte": ["Heute haben fast alle eine **GUI** (grafische Benutzeroberfläche)."] },
+          "**NIC (Network Interface Card)** – die Netzwerkkarte, die das Gerät mit dem Netzwerk verbindet.",
+          "**IAP (==Internet Access Provider==)** – die Firma, die den Zugang ins Internet liefert, z. B. A1 oder Magenta."
+        ] },
+        { "typ": "abschnitt", "text": "2. Client und Server" },
+        { "typ": "text", "text": "Im Internet gibt es immer zwei Rollen: Der **Client** fragt etwas an, der **Server** liefert die Antwort." },
+        { "typ": "bild", "datei": "bilder/2026-11-16_client-server.png", "breite_cm": 10, "unterschrift": "Skizze aus dem Unterricht: Der Client (links) schickt eine Anfrage, der Server (rechts) antwortet." },
+        { "typ": "tabelle", "kopf": ["", "Client (Browser)", "Server (Webserver)"], "breiten": [24, 38, 38], "zeilen": [
+          ["Beispiele", "Google Chrome, Microsoft Edge", "Apache, Microsoft **IIS**"],
+          ["Lizenz", "Freeware (gratis nutzbar)", "Apache ist Open Source\n- Quellcode öffentlich\n- darf verändert werden"]
+        ] },
+        { "typ": "merke", "text": "**DNS (Domain Name System)** ist das „Telefonbuch“ des Internets: Es übersetzt Namen wie *www.orf.at* in ==IP-Adressen==, mit denen Computer arbeiten." },
+        { "typ": "abschnitt", "text": "3. Wichtige Grundbegriffe" },
+        { "typ": "text", "text": "Das **WWW** ist nicht dasselbe wie das Internet – es ist nur ein Teil davon." },
+        { "typ": "beispiel", "titel": "Beispiel: Dienste im Internet", "punkte": ["WWW – Webseiten", "E-Mail", "FTP – Dateien übertragen"] },
+        { "typ": "begriffe", "eintraege": [
+          { "begriff": "WWW", "erklaerung": "World Wide Web – der Teil des Internets, der aus Webseiten besteht." },
+          { "begriff": "HTML", "erklaerung": "Hypertext Markup Language – die Sprache, in der Webseiten geschrieben sind." },
+          { "begriff": "DNS", "erklaerung": "Domain Name System – übersetzt Namen in IP-Adressen." },
+          { "begriff": "IAP", "erklaerung": "Internet Access Provider – liefert den Internetzugang." }
+        ] },
+        { "typ": "zusammenfassung", "punkte": [
+          "Für den Internetzugang braucht man Gerät, Betriebssystem, Netzwerkkarte und einen Provider.",
+          "Der Client fragt an, der Server antwortet.",
+          "DNS übersetzt Namen in IP-Adressen.",
+          "Das WWW ist nur ein Teil des Internets."
+        ] }
+      ]
+    }
+  ]
+}

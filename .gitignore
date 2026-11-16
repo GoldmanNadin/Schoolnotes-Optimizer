@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+*.docx
+_Mitschrift-Daten/
+.DS_Store
+Thumbs.db
+desktop.ini
