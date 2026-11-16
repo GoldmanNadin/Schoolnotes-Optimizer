@@ -19,9 +19,13 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 LEGENDE = """<!-- Legende der Markierungen:
-## Überschrift / ### Unterüberschrift   (von der Schülerin gesetzt)
+## Überschrift 1 / ### Überschrift 2 / #### Überschrift 3   (von der Schülerin gesetzt)
 **fett**  *kursiv*  __unterstrichen__  ==mit Textmarker markiert==  [farbig:rot]text[/farbig] (farbiger Text)
 [MERKE-KASTEN] ... [/MERKE-KASTEN]   = von der Schülerin als „Merke“ markiert (wichtig!)
+[BEISPIEL-KASTEN] ... [/BEISPIEL-KASTEN]  = als Beispiel markiert
+[ZITAT] ... [/ZITAT]                   = Zitat / Definition
+[HANDSCHRIFT n: datei | ...]           = direkt aufs Blatt gezeichnet/geschrieben (Mindmap, Pfeile, Kreise,
+                                         Notizen). Der Ausschnitt zeigt auch den Text darunter -> UNBEDINGT ansehen!
 [ZEICHNUNG n: datei | Breite x%]       = mit der Maus gezeichnet -> Bild ansehen!
 [BILD n: datei | Breite x%]            = eingefügtes Bild/Screenshot -> Bild ansehen!
 [BEMALTES-BILD n: datei | Breite x%]   = Bild, auf das gezeichnet wurde -> Bild ansehen!
@@ -66,8 +70,12 @@ def farbname(c):
 class Leser(HTMLParser):
     BLOCK = {"p", "div", "h1", "h2", "h3", "h4", "li", "blockquote", "tr", "table", "ul", "ol", "main", "body"}
 
-    def __init__(self, bildordner):
+    def __init__(self, bildordner, version=1):
         super().__init__(convert_charrefs=True)
+        self.version = version
+        self.kaesten = []
+        self.listenklassen = []
+        self.quelle = False
         self.zeilen = []
         self.puffer = ""
         self.listen = []          # Stapel: "ul"/"ol" mit Zähler
@@ -90,7 +98,8 @@ class Leser(HTMLParser):
     def zeile_beenden(self):
         t = self.puffer.rstrip()
         if t.strip() and t.strip() not in ("-", "##", "###") and not re.fullmatch(r"\s*\d+\.", t):
-            self.zeilen.append(t if t.lstrip().startswith(("- ", "#")) or re.match(r"\s*\d+\. ", t) else t.strip())
+            listenzeile = re.match(r"\s*(- |– |\d+\. |[a-z]\) |[ivxlcdmIVXLCDM]+\. |#)", t)
+            self.zeilen.append(t if listenzeile else t.strip())
         self.puffer = ""
 
     def leerzeile(self):
@@ -109,10 +118,17 @@ class Leser(HTMLParser):
         if tag in ("script", "style"):
             self.ignorieren += 1
             return
-        if tag in ("h1", "h2"):
-            self.leerzeile(); self.puffer = "## "
-        elif tag in ("h3", "h4"):
-            self.leerzeile(); self.puffer = "### "
+        if tag == "svg":
+            self.ignorieren += 1
+            return
+        if tag in ("h1", "h2", "h3", "h4"):
+            self.leerzeile()
+            if self.version >= 2:
+                self.puffer = {"h1": "## ", "h2": "### "}.get(tag, "#### ")
+            else:
+                self.puffer = "## " if tag in ("h1", "h2") else "### "
+        elif tag == "p" and "bildquelle" in (a.get("class") or ""):
+            self.zeile_beenden(); self.puffer = "(Bildquelle) "
         elif tag in ("p", "div"):
             if self.zelle is None:
                 self.zeile_beenden()
@@ -126,17 +142,20 @@ class Leser(HTMLParser):
                 self.zeile_beenden()
         elif tag in ("ul", "ol"):
             self.zeile_beenden()
-            self.listen.append(tag); self.zaehler.append(0)
+            self.listen.append(tag); self.zaehler.append(0); self.listenklassen.append(a.get("class") or "")
         elif tag == "li":
             self.zeile_beenden()
             tiefe = max(0, len(self.listen) - 1)
             if self.listen and self.listen[-1] == "ol":
                 self.zaehler[-1] += 1
-                self.puffer = "   " * tiefe + f"{self.zaehler[-1]}. "
+                self.puffer = "   " * tiefe + nummer(self.zaehler[-1], self.listen, self.listenklassen) + " "
             else:
-                self.puffer = "   " * tiefe + "- "
+                strich = any("striche" in k for k in self.listenklassen)
+                self.puffer = "   " * tiefe + ("– " if strich else "- ")
         elif tag == "blockquote":
-            self.leerzeile(); self.zeilen.append("[MERKE-KASTEN]")
+            art = {"beispiel": "BEISPIEL-KASTEN", "zitat": "ZITAT"}.get((a.get("class") or "").strip(), "MERKE-KASTEN")
+            self.kaesten.append(art)
+            self.leerzeile(); self.zeilen.append(f"[{art}]")
         elif tag == "table":
             self.leerzeile(); self.tabelle = []
         elif tag == "tr" and self.tabelle is not None:
@@ -178,7 +197,7 @@ class Leser(HTMLParser):
             return
         if not self.in_main:
             return
-        if tag in ("script", "style"):
+        if tag in ("script", "style", "svg"):
             self.ignorieren = max(0, self.ignorieren - 1)
             return
         if tag in ("b", "strong", "i", "em", "u", "mark", "span", "font"):
@@ -192,13 +211,14 @@ class Leser(HTMLParser):
         elif tag in ("ul", "ol"):
             self.zeile_beenden()
             if self.listen:
-                self.listen.pop(); self.zaehler.pop()
+                self.listen.pop(); self.zaehler.pop(); self.listenklassen.pop()
             if not self.listen:
                 self.leerzeile()
         elif tag == "li":
             self.zeile_beenden()
         elif tag == "blockquote":
-            self.zeile_beenden(); self.zeilen.append("[/MERKE-KASTEN]"); self.zeilen.append("")
+            art = self.kaesten.pop() if self.kaesten else "MERKE-KASTEN"
+            self.zeile_beenden(); self.zeilen.append(f"[/{art}]"); self.zeilen.append("")
         elif tag in ("td", "th") and self.zelle is not None and self.tabelle is not None:
             text = re.sub(r"\s+", " ", "".join(self.zelle)).strip(" /")
             if self.tabelle:
@@ -235,14 +255,41 @@ class Leser(HTMLParser):
         self.bildordner.mkdir(parents=True, exist_ok=True)
         (self.bildordner / name).write_bytes(base64.b64decode(m.group(2)))
         art = a.get("data-art", "bild")
-        marke = {"zeichnung": "ZEICHNUNG", "bemaltes-bild": "BEMALTES-BILD"}.get(art, "BILD")
+        marke = {"zeichnung": "ZEICHNUNG", "bemaltes-bild": "BEMALTES-BILD", "handschrift": "HANDSCHRIFT"}.get(art, "BILD")
         breite = a.get("data-breite", "")
-        info = f"[{marke} {nr}: bilder/{name}" + (f" | Breite {breite}" if breite else "") + "]"
+        info = f"[{marke} {nr}: bilder/{name}" + (f" | Breite {breite}" if breite else "")
+        if a.get("data-bezug"):
+            info += f" | berührt den Text: „{a['data-bezug']}“"
+        if a.get("data-texte"):
+            info += f" | aufs Blatt geschriebene Wörter: {a['data-texte']}"
+        if a.get("data-quelle"):
+            info += f" | Quelle: {a['data-quelle']}"
+        info += "]"
         self.bilder.append({"nr": nr, "datei": f"bilder/{name}", "art": art, "breite": breite})
         if self.zelle is not None:
             self.zelle.append(" " + info + " ")
         else:
             self.zeile_beenden(); self.zeilen.append(info)
+
+
+def roemisch(n):
+    w = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+    r = ""
+    for wert, z in w:
+        while n >= wert:
+            r += z; n -= wert
+    return r
+
+
+def nummer(n, listen, klassen):
+    """Nummer wie im Notizblock: 1. / a) / i. – je nach Art und Ebene."""
+    ol_tiefe = sum(1 for t in listen if t == "ol") - 1
+    klasse = next((k for t, k in zip(listen, klassen) if t == "ol" and k), "")
+    if "roemisch" in klasse and ol_tiefe == 0:
+        return roemisch(n) + "."
+    if "buchstaben" in klasse and ol_tiefe == 0:
+        return chr(96 + min(n, 26)) + ")"
+    return [f"{n}.", chr(96 + min(n, 26)) + ")", roemisch(n).lower() + "."][min(ol_tiefe, 2)]
 
 
 def meta_lesen(html):
@@ -260,7 +307,11 @@ def auspacken(datei, ziel):
     meta = meta_lesen(html)
     if "<main" not in html:  # notfalls: ganzer body
         html = re.sub(r"<body[^>]*>", '<body><main id="notizen">', html).replace("</body>", "</main></body>")
-    leser = Leser(ziel / "bilder")
+    try:
+        version = int(meta.get("version", "1"))
+    except ValueError:
+        version = 1
+    leser = Leser(ziel / "bilder", version)
     leser.feed(html)
     leser.zeile_beenden()
     text = "\n".join(leser.zeilen)

@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src https:">
+<title>Notizblock</title>
+<style>
+:root{
+  --akzent:#1F7A5C; --akzent-hell:#E8F3EF; --akzent-mittel:#C7E3D8;
+  --bg:#EEF0F3; --text:#1F2328; --leise:#6B7280; --linie:#DDE1E7; --flaeche:#F8F9FB;
+  --schatten:0 1px 2px rgba(0,0,0,.06),0 6px 24px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+
+/* ---------------- Kopf ---------------- */
+.kopf{background:#fff;border-bottom:1px solid var(--linie);flex:none;z-index:20}
+.kopf-oben{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:8px 16px;border-top:4px solid var(--akzent)}
+.logo{font-weight:700;font-size:16px;white-space:nowrap;align-self:center;margin-right:4px}
+.logo span{color:var(--akzent)}
+.feld{display:flex;flex-direction:column;gap:1px}
+.feld label{font-size:10.5px;color:var(--leise);text-transform:uppercase;letter-spacing:.05em}
+.feld select,.feld input{border:1px solid var(--linie);border-radius:7px;padding:5px 8px;background:#fff;height:32px}
+.feld select{font-weight:600;color:var(--akzent)}
+#thema{width:260px}
+.abstand{flex:1}
+#status{font-size:12px;color:var(--leise);white-space:nowrap;align-self:center}
+.knopf{border:1px solid var(--linie);background:#fff;border-radius:8px;padding:0 12px;height:34px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.knopf:hover{background:#F4F5F7}
+.knopf-haupt{background:var(--akzent);border-color:var(--akzent);color:#fff;font-weight:600}
+.knopf-haupt:hover{background:var(--akzent);filter:brightness(1.08)}
+
+/* ---------------- Menüband ---------------- */
+.band{display:flex;flex-wrap:wrap;align-items:stretch;padding:4px 8px;background:var(--flaeche);border-top:1px solid var(--linie);gap:2px}
+.gruppe{display:flex;flex-direction:column;padding:2px 8px 0;border-right:1px solid var(--linie)}
+.gruppe:last-child{border-right:0}
+.gruppe .reihe{display:flex;align-items:center;gap:2px;flex-wrap:wrap;flex:1}
+.gruppe .name{font-size:10.5px;color:var(--leise);text-align:center;padding:1px 0 2px;letter-spacing:.03em}
+.wz{border:1px solid transparent;background:transparent;border-radius:6px;min-width:30px;height:30px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;gap:4px;color:#2B3038}
+.wz:hover{background:#E8EAEE}
+.wz.an{background:var(--akzent-hell);border-color:var(--akzent-mittel);color:var(--akzent)}
+.wz svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.wz .t{font-size:12.5px}
+.wz .pfeil-runter{font-size:9px;opacity:.6}
+.trenner{width:1px;height:22px;background:var(--linie);margin:0 3px}
+/* Formatvorlagen-Galerie */
+.vorlagen{display:flex;gap:3px;height:100%}
+.vorlage{border:1px solid var(--linie);background:#fff;border-radius:6px;width:92px;height:58px;padding:4px 7px;text-align:left;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.vorlage:hover{border-color:#B9C0CA}
+.vorlage.an{border-color:var(--akzent);box-shadow:0 0 0 1px var(--akzent) inset}
+.vorlage .bsp{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.vorlage .vn{font-size:10.5px;color:var(--leise);margin-top:3px}
+.v-standard .bsp{font-family:Calibri,"Segoe UI",sans-serif;font-size:13px}
+.v-h1 .bsp{font-family:Calibri,"Segoe UI",sans-serif;font-size:17px;font-weight:700;color:var(--akzent)}
+.v-h2 .bsp{font-family:Calibri,"Segoe UI",sans-serif;font-size:15px;font-weight:700;color:var(--akzent)}
+.v-h3 .bsp{font-family:Calibri,"Segoe UI",sans-serif;font-size:13.5px;font-weight:700;color:#3a3f47}
+.v-merke .bsp{font-size:12px;background:#FFF6D6;border-left:3px solid #E8B931;padding:1px 4px}
+.v-beispiel .bsp{font-size:12px;background:#F1F3F5;border-left:3px solid #9AA3AE;padding:1px 4px}
+.v-zitat .bsp{font-size:12.5px;font-style:italic;color:#555;border-left:3px solid #C9CED6;padding-left:5px}
+.farbe{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #C3C9D2;padding:0}
+.farbe.an{box-shadow:0 0 0 2px var(--akzent)}
+.dicke{width:28px;height:28px;border:1px solid transparent;border-radius:6px;background:transparent;display:inline-flex;align-items:center;justify-content:center}
+.dicke.an,.dicke:hover{background:#E8EAEE}
+.dicke i{display:block;background:#333;border-radius:50%}
+.stiftoptionen{display:none;align-items:center;gap:3px}
+body.stiftmodus .stiftoptionen{display:flex}
+
+/* Ausklapp-Menü */
+.menue{position:fixed;z-index:60;background:#fff;border:1px solid var(--linie);border-radius:8px;box-shadow:var(--schatten);padding:4px;display:none;min-width:200px}
+.menue.offen{display:block}
+.menue button{display:flex;width:100%;align-items:center;gap:10px;border:0;background:transparent;padding:7px 10px;border-radius:6px;text-align:left}
+.menue button:hover{background:#F1F3F6}
+.menue .sym{width:34px;font-family:Calibri,"Segoe UI",sans-serif;color:var(--akzent);font-weight:700;text-align:center}
+.menue hr{border:0;border-top:1px solid var(--linie);margin:4px 2px}
+
+/* ---------------- Arbeitsfläche / Blatt ---------------- */
+.flaeche{flex:1;overflow:auto;padding:28px 16px 80px}
+#blatt-stil{display:none}
+.hinweis-stift{position:fixed;left:50%;transform:translateX(-50%);top:auto;bottom:18px;background:#1F2328;color:#fff;border-radius:999px;padding:7px 14px;font-size:13px;z-index:30;display:none;box-shadow:var(--schatten)}
+body.stiftmodus .hinweis-stift{display:block}
+
+/* Das Blatt (dieselben Regeln gelten auch beim Export → identische Positionen) */
+.blatt{position:relative;width:794px;min-height:1123px;margin:0 auto;background:#fff;box-shadow:var(--schatten);padding:64px 72px 120px;border-radius:2px}
+#editor{outline:none;font-family:Calibri,Carlito,"Segoe UI",sans-serif;font-size:15px;line-height:1.55;color:#1F2328;min-height:200px;word-wrap:break-word;caret-color:var(--akzent)}
+#editor > *:first-child{margin-top:0}
+#editor p{margin:0 0 6px}
+#editor h1{font-size:23px;line-height:1.25;color:var(--akzent);margin:18px 0 8px;font-weight:700}
+#editor h2{font-size:19px;line-height:1.3;color:var(--akzent);margin:16px 0 6px;font-weight:700}
+#editor h3{font-size:16px;line-height:1.35;color:#3A3F47;margin:12px 0 4px;font-weight:700}
+#editor ul,#editor ol{margin:2px 0 8px;padding-left:30px}
+#editor li{margin:1px 0;padding-left:2px}
+#editor ul{list-style-type:disc}
+#editor ul ul{list-style-type:circle}
+#editor ul ul ul{list-style-type:square}
+#editor ul.striche,#editor ul.striche ul{list-style-type:"–  "}
+#editor ol{list-style-type:decimal}
+#editor ol ol{list-style-type:lower-alpha}
+#editor ol ol ol{list-style-type:lower-roman}
+#editor ol.buchstaben{list-style-type:lower-alpha}
+#editor ol.roemisch{list-style-type:upper-roman}
+#editor blockquote{margin:8px 0;padding:8px 12px;border-radius:4px}
+#editor blockquote > *:last-child{margin-bottom:0}
+#editor blockquote.merke{background:#FFF6D6;border-left:5px solid #E8B931}
+#editor blockquote.merke:before{content:"MERKE";display:block;font:700 10.5px "Segoe UI",sans-serif;letter-spacing:.1em;color:#9A7400;margin-bottom:2px}
+#editor blockquote.beispiel{background:#F1F3F5;border-left:5px solid #9AA3AE}
+#editor blockquote.beispiel:before{content:"BEISPIEL";display:block;font:700 10.5px "Segoe UI",sans-serif;letter-spacing:.1em;color:#5B6470;margin-bottom:2px}
+#editor blockquote.zitat{border-left:4px solid #C9CED6;font-style:italic;color:#4B5563;padding:2px 12px}
+#editor table{border-collapse:collapse;margin:8px 0 10px;width:100%;table-layout:fixed}
+#editor td,#editor th{border:1px solid #C9CED6;padding:5px 8px;vertical-align:top;word-wrap:break-word}
+#editor tr:first-child td{background:var(--akzent-hell);font-weight:700}
+#editor img{max-width:100%;height:auto;vertical-align:top}
+#editor p.bildabsatz{text-align:center;margin:8px 0}
+#editor p.bildquelle{font-size:11.5px;color:#6B7280;text-align:center;margin-top:-4px}
+#editor .zeichenplatz{display:block;margin:0;user-select:none}
+#tinte{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#tinte text{font-family:"Segoe Print","Segoe UI",sans-serif;white-space:pre}
+</style>
+<style id="nur-editor">
+#editor img.gewaehlt{outline:3px solid var(--akzent);outline-offset:2px}
+body.stiftmodus #tinte{pointer-events:all;cursor:crosshair}
+body.stiftmodus.wz-radierer #tinte{cursor:cell}
+body.stiftmodus.wz-text #tinte{cursor:text}
+body.stiftmodus #editor{user-select:none}
+body.stiftmodus #editor .zeichenplatz{outline:1px dashed #D9DDE3}
+#tinte-eingabe{position:absolute;display:none;z-index:5;border:1px dashed #9AA3AE;background:rgba(255,255,255,.92);font-family:"Segoe Print","Segoe UI",sans-serif;padding:0 3px;outline:none;min-width:80px;white-space:pre}
+#bildmenue{position:fixed;z-index:40;display:none;background:#1F2328;color:#fff;border-radius:8px;padding:3px;gap:2px;box-shadow:var(--schatten)}
+#bildmenue button{background:transparent;border:0;color:#fff;padding:5px 9px;border-radius:6px;font-size:12.5px}
+#bildmenue button:hover{background:#3A4049}
+
+/* ---------------- Dialoge ---------------- */
+.dialog-hg{position:fixed;inset:0;background:rgba(20,24,30,.45);z-index:70;display:none;align-items:center;justify-content:center;padding:16px}
+.dialog-hg.offen{display:flex}
+.dialog{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:540px;width:100%;padding:22px 24px;max-height:calc(100vh - 32px);overflow:auto}
+.dialog h2{margin:0 0 8px;font-size:19px}
+.dialog p{margin:6px 0;color:#374151}
+.dialog .knoepfe{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.dialog input[type=text],.dialog input[type=search]{width:100%;border:1px solid var(--linie);border-radius:8px;padding:8px 10px;height:38px}
+.code{display:inline-block;background:#F3F4F6;border:1px solid var(--linie);border-radius:6px;padding:1px 8px;font-family:Consolas,monospace;font-weight:700}
+.haken{width:52px;height:52px;border-radius:50%;background:var(--akzent-hell);color:var(--akzent);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:6px}
+ol.schritte{padding-left:20px;margin:8px 0}
+ol.schritte li{margin:4px 0}
+#netzbild .dialog{max-width:920px}
+.reiter{display:flex;gap:4px;border-bottom:1px solid var(--linie);margin:6px 0 12px}
+.reiter button{border:0;background:transparent;padding:8px 12px;border-bottom:2px solid transparent;color:var(--leise);font-weight:600}
+.reiter button.an{color:var(--akzent);border-bottom-color:var(--akzent)}
+.suchzeile{display:flex;gap:8px}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px;min-height:120px}
+.treffer{border:1px solid var(--linie);border-radius:8px;overflow:hidden;background:#F6F7F9;padding:0;display:flex;flex-direction:column;text-align:left}
+.treffer:hover{border-color:var(--akzent);box-shadow:0 0 0 2px var(--akzent-mittel)}
+.treffer img{width:100%;height:110px;object-fit:contain;background:#fff;display:block}
+.treffer span{font-size:11px;color:var(--leise);padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leer{color:var(--leise);grid-column:1/-1;text-align:center;padding:30px 0}
+#meldung{position:fixed;left:50%;bottom:60px;transform:translateX(-50%);background:#1F2328;color:#fff;padding:9px 16px;border-radius:10px;z-index:90;display:none;box-shadow:var(--schatten)}
+</style>
+</head>
+<body>
+
+<header class="kopf">
+  <div class="kopf-oben">
+    <div class="logo">✎ <span>Notizblock</span></div>
+    <div class="feld"><label for="fach">Fach</label><select id="fach"></select></div>
+    <div class="feld"><label for="thema">Thema der Stunde</label><input id="thema" type="text" placeholder="z. B. Das Internet (optional)"></div>
+    <div class="feld"><label for="datum">Datum</label><input id="datum" type="date"></div>
+    <div class="abstand"></div>
+    <span id="status">–</span>
+    <button class="knopf" id="mehr">⋯ Mehr</button>
+    <button class="knopf knopf-haupt" id="fertig">Stunde beenden → Claude</button>
+  </div>
+
+  <div class="band">
+    <div class="gruppe">
+      <div class="reihe">
+        <button class="wz" id="rueck" title="Rückgängig (Strg+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+        <button class="wz" id="vor" title="Wiederholen (Strg+Y)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+      </div>
+      <div class="name">Verlauf</div>
+    </div>
+
+    <div class="gruppe">
+      <div class="reihe vorlagen" id="vorlagen">
+        <button class="vorlage v-standard" data-vorlage="p" title="Standard (Strg+Umschalt+N)"><span class="bsp">AaBbCc</span><span class="vn">Standard</span></button>
+        <button class="vorlage v-h1" data-vorlage="h1" title="Überschrift 1 (Strg+Alt+1)"><span class="bsp">AaBbC</span><span class="vn">Überschrift 1</span></button>
+        <button class="vorlage v-h2" data-vorlage="h2" title="Überschrift 2 (Strg+Alt+2)"><span class="bsp">AaBbCc</span><span class="vn">Überschrift 2</span></button>
+        <button class="vorlage v-h3" data-vorlage="h3" title="Überschrift 3 (Strg+Alt+3)"><span class="bsp">AaBbCc</span><span class="vn">Überschrift 3</span></button>
+        <button class="vorlage v-merke" data-vorlage="merke" title="Merke-Kasten: Wichtiges"><span class="bsp">Wichtig!</span><span class="vn">Merke</span></button>
+        <button class="vorlage v-beispiel" data-vorlage="beispiel" title="Beispiel-Kasten"><span class="bsp">z. B. …</span><span class="vn">Beispiel</span></button>
+        <button class="vorlage v-zitat" data-vorlage="zitat" title="Zitat / Definition"><span class="bsp">„Zitat“</span><span class="vn">Zitat</span></button>
+      </div>
+      <div class="name">Formatvorlagen</div>
+    </div>
+
+    <div class="gruppe">
+      <div class="reihe">
+        <button class="wz" data-cmd="bold" title="Fett (Strg+B)"><b>F</b></button>
+        <button class="wz" data-cmd="italic" title="Kursiv (Strg+I)"><i style="font-family:Georgia,serif">K</i></button>
+        <button class="wz" data-cmd="underline" title="Unterstrichen (Strg+U)"><u>U</u></button>
+        <span class="trenner"></span>
+        <button class="farbe" data-textfarbe="#1F2328" style="background:#1F2328" title="Schwarz"></button>
+        <button class="farbe" data-textfarbe="#D32F2F" style="background:#D32F2F" title="Rot"></button>
+        <button class="farbe" data-textfarbe="#1565C0" style="background:#1565C0" title="Blau"></button>
+        <button class="farbe" data-textfarbe="#2E7D32" style="background:#2E7D32" title="Grün"></button>
+        <button class="wz" id="markieren" title="Textmarker (gelb)"><svg viewBox="0 0 24 24"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg></button>
+      </div>
+      <div class="name">Schrift</div>
+    </div>
+
+    <div class="gruppe">
+      <div class="reihe">
+        <button class="wz" data-liste="punkte" title="Aufzählung mit Punkten (Strg+Umschalt+L)"><svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1.3" fill="currentColor"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/><circle cx="4" cy="18" r="1.3" fill="currentColor"/></svg></button>
+        <button class="wz" data-liste="striche" title="Aufzählung mit Strichen"><svg viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M2.5 6h3M2.5 12h3M2.5 18h3"/></svg></button>
+        <button class="wz" data-liste="nummern" title="Nummerierung 1. 2. 3."><svg viewBox="0 0 24 24"><path d="M10 6h11M10 12h11M10 18h11"/><path d="M4 4.5h1v4M3.6 8.5h2.4" stroke-width="1.6"/><path d="M3.5 14.5c.4-.6 2.4-.8 2.4.4 0 1-2.4 2-2.4 3h2.6" stroke-width="1.6"/></svg></button>
+        <button class="wz" id="listenmenue-knopf" title="Weitere Aufzählungen"><span class="t">Liste</span><span class="pfeil-runter">▼</span></button>
+        <span class="trenner"></span>
+        <button class="wz" id="ausruecken" title="Einzug verkleinern (Umschalt+Tab)"><svg viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="m7 8-4 4 4 4"/></svg></button>
+        <button class="wz" id="einruecken" title="Einzug vergrößern (Tab)"><svg viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="m3 8 4 4-4 4"/></svg></button>
+      </div>
+      <div class="name">Absatz</div>
+    </div>
+
+    <div class="gruppe">
+      <div class="reihe">
+        <button class="wz" id="tabelle" title="Tabelle einfügen"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></svg><span class="t">Tabelle</span></button>
+        <button class="wz" id="bild" title="Bild vom Computer"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></svg><span class="t">Bild</span></button>
+        <button class="wz" id="netzbild-knopf" title="Bild aus dem Internet suchen oder per Adresse einfügen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="t">Onlinebild</span></button>
+      </div>
+      <div class="name">Einfügen</div>
+    </div>
+
+    <div class="gruppe">
+      <div class="reihe" id="werkzeuge">
+        <button class="wz an" data-wz="tippen" title="Tippen (Esc)"><svg viewBox="0 0 24 24"><path d="M9 4h6M9 20h6M12 4v16"/></svg><span class="t">Tippen</span></button>
+        <button class="wz" data-wz="stift" title="Stift – direkt aufs Blatt zeichnen"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span class="t">Stift</span></button>
+        <button class="wz" data-wz="marker" title="Textmarker (durchsichtig)"><svg viewBox="0 0 24 24"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg></button>
+        <button class="wz" data-wz="pfeil" title="Pfeil"><svg viewBox="0 0 24 24"><path d="M5 19 19 5"/><path d="M9 5h10v10"/></svg></button>
+        <button class="wz" data-wz="linie" title="Gerade Linie"><svg viewBox="0 0 24 24"><path d="M4 20 20 4"/></svg></button>
+        <button class="wz" data-wz="rahmen" title="Kreis / Rahmen um etwas"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6.5"/></svg></button>
+        <button class="wz" data-wz="text" title="Text irgendwo aufs Blatt (z. B. für eine Mindmap)"><span class="t" style="font-family:'Segoe Print',sans-serif;font-weight:700">T</span></button>
+        <button class="wz" data-wz="radierer" title="Radierer (löscht ganze Striche)"><svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l10-10a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L13 19"/><path d="M22 21H7"/></svg></button>
+        <span class="stiftoptionen" id="stiftfarben"></span>
+        <span class="stiftoptionen">
+          <button class="dicke" data-dicke="2" title="dünn"><i style="width:4px;height:4px"></i></button>
+          <button class="dicke an" data-dicke="3.5" title="mittel"><i style="width:8px;height:8px"></i></button>
+          <button class="dicke" data-dicke="6" title="dick"><i style="width:12px;height:12px"></i></button>
+        </span>
+      </div>
+      <div class="name">Zeichnen</div>
+    </div>
+  </div>
+</header>
+
+<main class="flaeche" id="flaeche">
+  <div class="blatt" id="blatt">
+    <div id="editor" contenteditable="true" spellcheck="true"></div>
+    <svg id="tinte" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="tinte-eingabe" contenteditable="true"></div>
+  </div>
+</main>
+<div class="hinweis-stift">Zeichne direkt aufs Blatt · <b>Esc</b> = zurück zum Tippen · <b>Strg+Z</b> = rückgängig</div>
+
+<div class="menue" id="listenmenue">
+  <button data-liste="punkte"><span class="sym">●</span>Punkte</button>
+  <button data-liste="striche"><span class="sym">–</span>Striche</button>
+  <hr>
+  <button data-liste="nummern"><span class="sym">1.</span>Nummerierung 1. 2. 3.</button>
+  <button data-liste="buchstaben"><span class="sym">a)</span>Buchstaben a) b) c)</button>
+  <button data-liste="roemisch"><span class="sym">I.</span>Römisch I. II. III.</button>
+  <hr>
+  <button data-liste="aus"><span class="sym">¶</span>Aufzählung beenden</button>
+</div>
+
+<div id="bildmenue">
+  <button data-bild="kleiner">− Kleiner</button>
+  <button data-bild="groesser">+ Größer</button>
+  <button data-bild="links">⇤ Links</button>
+  <button data-bild="mitte">↔ Mitte</button>
+  <button data-bild="loeschen">🗑 Löschen</button>
+</div>
+<input type="file" id="bilddatei" accept="image/*" multiple hidden>
+
+<!-- Fertig -->
+<div class="dialog-hg" id="fertig-hg">
+  <div class="dialog" role="dialog">
+    <div class="haken">✓</div>
+    <h2>Gespeichert!</h2>
+    <p id="fertig-text"></p>
+    <p><b>Jetzt nur noch:</b></p>
+    <ol class="schritte">
+      <li>Claude-App öffnen (Ordner <b>Schule › Schuljahr</b>)</li>
+      <li>Eintippen: <span class="code">/mitschrift</span> <button class="knopf" id="kopieren" style="height:24px;padding:0 8px;font-size:12px">kopieren</button></li>
+    </ol>
+    <p style="color:var(--leise);font-size:13px">Claude hängt die Stunde schön gestaltet an das Word-Dokument des Fachs an.</p>
+    <div class="knoepfe">
+      <button class="knopf" id="ordner-zeigen">📁 Ordner zeigen</button>
+      <button class="knopf" id="weiterschreiben">Weiterschreiben</button>
+      <button class="knopf knopf-haupt" id="neue-stunde">Neue Stunde beginnen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Onlinebild -->
+<div class="dialog-hg" id="netzbild">
+  <div class="dialog" role="dialog">
+    <h2>Bild aus dem Internet</h2>
+    <div class="reiter">
+      <button class="an" data-reiter="suche">🔎 Suchen</button>
+      <button data-reiter="adresse">🔗 Bild-Adresse einfügen</button>
+    </div>
+    <div id="r-suche">
+      <form class="suchzeile" id="suchform">
+        <input type="search" id="suchbegriff" placeholder="z. B. Client Server, Herz Anatomie, Wien Karte …" autocomplete="off">
+        <button class="knopf knopf-haupt" type="submit">Suchen</button>
+      </form>
+      <div class="raster" id="suchtreffer"><div class="leer">Freie Bilder von Wikimedia Commons – darfst du für die Schule verwenden.</div></div>
+      <p style="font-size:12px;color:var(--leise)">Tipp: Du kannst auch in deinem Browser ein Bild mit Rechtsklick → „Bild kopieren“ kopieren und hier mit <b>Strg+V</b> einfügen, oder es direkt aufs Blatt ziehen.</p>
+    </div>
+    <div id="r-adresse" style="display:none">
+      <p>Im Browser mit Rechtsklick aufs Bild → „Bildadresse kopieren“, dann hier einfügen:</p>
+      <form class="suchzeile" id="adressform">
+        <input type="text" id="bildadresse" placeholder="https://…/bild.png" autocomplete="off">
+        <button class="knopf knopf-haupt" type="submit">Einfügen</button>
+      </form>
+    </div>
+    <div class="knoepfe"><button class="knopf" data-schliessen>Schließen</button></div>
+  </div>
+</div>
+
+<!-- Mehr -->
+<div class="dialog-hg" id="mehr-hg">
+  <div class="dialog" role="dialog">
+    <h2>Weitere Funktionen</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+      <button class="knopf" id="m-neu">✚ Neue leere Stunde beginnen</button>
+      <button class="knopf" id="m-letzte">↺ Letzte (beendete) Stunde wiederherstellen</button>
+      <button class="knopf" id="m-ordner">📁 Speicherort für Claude ändern</button>
+      <button class="knopf" id="m-fach">＋ Anderes Fach hinzufügen</button>
+    </div>
+    <p id="m-info" style="color:var(--leise);font-size:12.5px;margin-top:14px"></p>
+    <p style="color:var(--leise);font-size:12.5px">Tastenkürzel: Strg+Alt+1/2/3 Überschriften · Strg+Umschalt+N Standard · Strg+Umschalt+L Aufzählung · „- “ oder „1. “ am Zeilenanfang startet eine Liste · Tab/Umschalt+Tab ein-/ausrücken · Strg+Mausrad/Strg+± Zoom</p>
+    <div class="knoepfe"><button class="knopf" data-schliessen>Schließen</button></div>
+  </div>
+</div>
+
+<!-- Thema-Frage -->
+<div class="dialog-hg" id="thema-hg">
+  <div class="dialog" role="dialog">
+    <h2>Wie hieß das Thema?</h2>
+    <p>Optional – wenn du es leer lässt, sucht Claude selbst einen passenden Titel.</p>
+    <input type="text" id="thema-frage" placeholder="z. B. Das Internet">
+    <div class="knoepfe">
+      <button class="knopf" id="thema-ueberspringen">Überspringen</button>
+      <button class="knopf knopf-haupt" id="thema-ok">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<div id="meldung"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Grundlagen
+   ===================================================================== */
+const FAECHER = [
+  ["BUNW","#2F855A"],["BW","#1F3A68"],["Business Behaviour","#7B4B94"],["Deutsch","#B23A48"],
+  ["EBC","#1F7A5C"],["Englisch","#3949AB"],["IMCM","#C8741A"],["Mathe","#1565C0"],
+  ["NW","#5A8A2F"],["OMAI","#00838F"],["PBGW","#6D4C41"],["UR","#455A64"]
+];
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const editor = $("#editor"), blatt = $("#blatt"), svg = $("#tinte"), flaeche = $("#flaeche");
+const SVGNS = "http://www.w3.org/2000/svg";
+const heute = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const neueId = () => Math.random().toString(36).slice(2, 9);
+function meldung(t, ms = 2800) { const m = $("#meldung"); m.textContent = t; m.style.display = "block"; clearTimeout(meldung.t); meldung.t = setTimeout(() => m.style.display = "none", ms); }
+function dialog(id, auf = true) { $(id).classList.toggle("offen", auf); }
+$$("[data-schliessen]").forEach(b => b.onclick = () => b.closest(".dialog-hg").classList.remove("offen"));
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/* Speicher: Desktop-App (Festplatte) oder Browser (Notlösung) */
+const API = window.notizblock || {
+  desktop: false,
+  entwurfLaden: async () => { try { return JSON.parse(localStorage.getItem("entwurf")); } catch { return null; } },
+  entwurfSpeichern: async d => { localStorage.setItem("entwurf", d); return true; },
+  entwurfSofortSpeichern: d => { try { localStorage.setItem("entwurf", d); } catch {} return true; },
+  letzteLaden: async () => { try { return JSON.parse(localStorage.getItem("letzte")); } catch { return null; } },
+  letzteSpeichern: async d => { try { localStorage.setItem("letzte", JSON.stringify(d)); } catch {} return true; },
+  einstellungen: async () => { try { return JSON.parse(localStorage.getItem("einstellungen")) || {}; } catch { return {}; } },
+  einstellungSetzen: async (k, v) => { const e = await API.einstellungen(); e[k] = v; localStorage.setItem("einstellungen", JSON.stringify(e)); },
+  eingangWaehlen: async () => null, eingangOeffnen: async () => null,
+  exportSpeichern: async (name, html) => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([html], { type: "text/html" })); a.download = name; a.click(); return { ok: true, pfad: name, ordner: "Downloads" }; },
+  ausschnitte: async () => null,
+  bildLaden: async url => { try { const r = await fetch(url); const b = await r.blob(); return { ok: true, src: await new Promise(ok => { const f = new FileReader(); f.onload = () => ok(f.result); f.readAsDataURL(b); }) }; } catch (e) { return { ok: false, grund: "Im Browser nicht möglich – bitte die Desktop-App verwenden." }; } },
+  bildSuchen: async (begriff) => { try { const u = "https://commons.wikimedia.org/w/api.php?origin=*&" + new URLSearchParams({ action: "query", format: "json", generator: "search", gsrsearch: begriff + " filetype:bitmap|drawing", gsrnamespace: "6", gsrlimit: "30", prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: "900", iiextmetadatafilter: "Artist|LicenseShortName" }); const d = await (await fetch(u)).json(); return { ok: true, treffer: Object.values(d.query?.pages || {}).map(p => { const i = p.imageinfo?.[0] || {}; return { titel: p.title.replace(/^File:|^Datei:/, ""), vorschau: i.thumburl, bild: i.thumburl, seite: i.descriptionurl, urheber: (i.extmetadata?.Artist?.value || "").replace(/<[^>]+>/g, ""), lizenz: i.extmetadata?.LicenseShortName?.value || "" }; }).filter(t => t.vorschau) }; } catch (e) { return { ok: false, grund: e.message }; } },
+  linkOeffnen: async url => window.open(url, "_blank"),
+  textKopieren: async t => navigator.clipboard.writeText(t),
+};
+
+/* Farben pro Fach */
+function hell(hex, anteil) { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; const m = c => Math.round(c + (255 - c) * anteil); return "#" + [m(r), m(g), m(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
+let eigeneFaecher = [];
+const alleFaecher = () => FAECHER.concat(eigeneFaecher);
+const fachFarbe = n => (alleFaecher().find(f => f[0] === n) || [0, "#455A64"])[1];
+function setzeFarbe() {
+  const c = fachFarbe($("#fach").value), s = document.documentElement.style;
+  s.setProperty("--akzent", c); s.setProperty("--akzent-hell", hell(c, .9)); s.setProperty("--akzent-mittel", hell(c, .72));
+}
+function fuelleFaecher(gewaehlt) {
+  if (gewaehlt && !alleFaecher().some(f => f[0] === gewaehlt)) eigeneFaecher.push([gewaehlt, "#455A64"]);
+  const s = $("#fach"); s.innerHTML = "";
+  alleFaecher().forEach(([n]) => { const o = document.createElement("option"); o.value = o.textContent = n; s.appendChild(o); });
+  if (gewaehlt) s.value = gewaehlt;
+  setzeFarbe();
+}
+
+/* =====================================================================
+   Zustand: Tinte (Zeichnungen) – verankert an Absätzen
+   s = {id, typ, farbe, dicke, anker, pts:[[x,dy]...]}   (typ: stift|marker|linie|pfeil|rahmen)
+   s = {id, typ:"text", farbe, groesse, anker, x, dy, text}
+   ===================================================================== */
+let striche = [];
+
+/* =====================================================================
+   Rückgängig / Wiederholen (eigener Verlauf für Text UND Zeichnungen)
+   ===================================================================== */
+const verlauf = { zurueck: [], vor: [], zeit: 0, typ: "" };
+function caretPfad() {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return null;
+  const pfad = n => { const p = []; while (n && n !== editor) { p.unshift([...n.parentNode.childNodes].indexOf(n)); n = n.parentNode; } return p; };
+  return { a: pfad(s.anchorNode), ao: s.anchorOffset, f: pfad(s.focusNode), fo: s.focusOffset };
+}
+function caretSetzen(c) {
+  if (!c) return;
+  const knoten = p => { let n = editor; for (const i of p) { if (!n.childNodes[i]) break; n = n.childNodes[i]; } return n; };
+  try {
+    const a = knoten(c.a), f = knoten(c.f), r = document.createRange();
+    const begr = (n, o) => Math.min(o, n.nodeType === 3 ? n.length : n.childNodes.length);
+    getSelection().setBaseAndExtent(a, begr(a, c.ao), f, begr(f, c.fo));
+  } catch { }
+}
+const zustand = () => ({ html: editor.innerHTML, striche: JSON.stringify(striche), caret: caretPfad() });
+/* Cursor über Umbauten hinweg behalten: Position als Zeichen-Nummer im ganzen Text */
+function zeichenPos(knoten, off) { try { const r = document.createRange(); r.setStart(editor, 0); r.setEnd(knoten, off); return r.toString().length; } catch { return 0; } }
+function caretMerken() {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return null;
+  const b = blockVon(s.anchorNode); let innen = s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentNode;
+  return { a: zeichenPos(s.anchorNode, s.anchorOffset), f: zeichenPos(s.focusNode, s.focusOffset), leer: !!b && !b.textContent.length, id: b && b.dataset.b };
+}
+function stelleBei(pos) {
+  const w = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT); let n, rest = pos, letzter = null;
+  while ((n = w.nextNode())) { if (rest <= n.length) return [n, rest]; rest -= n.length; letzter = n; }
+  return letzter ? [letzter, letzter.length] : [editor, editor.childNodes.length];
+}
+function caretZurueck(c) {
+  if (!c) return;
+  const s = getSelection();
+  const leerBlock = c.leer && c.id && editor.querySelector(`[data-b="${c.id}"]`);
+  if (leerBlock) { const ziel = leerBlock.matches("ul,ol,blockquote,table") ? (leerBlock.querySelector("li,p,td") || leerBlock) : leerBlock; const r = document.createRange(); r.setStart(ziel, 0); r.collapse(true); s.removeAllRanges(); s.addRange(r); return; }
+  const [a, ao] = stelleBei(c.a), [f, fo] = stelleBei(c.f);
+  try { s.setBaseAndExtent(a, ao, f, fo); } catch { }
+}
+function merken(typ = "aktion") {
+  verlauf.zurueck.push(zustand()); if (verlauf.zurueck.length > 300) verlauf.zurueck.shift();
+  verlauf.vor = []; verlauf.zeit = Date.now(); verlauf.typ = typ;
+}
+function wiederherstellen(z) {
+  editor.innerHTML = z.html; striche = JSON.parse(z.striche);
+  editor.focus({ preventScroll: true }); caretSetzen(z.caret);
+  neuOrdnen(); geaendert();
+}
+function rueckgaengig() { if (!verlauf.zurueck.length) return; verlauf.vor.push(zustand()); wiederherstellen(verlauf.zurueck.pop()); verlauf.typ = ""; }
+function wiederholen() { if (!verlauf.vor.length) return; verlauf.zurueck.push(zustand()); wiederherstellen(verlauf.vor.pop()); verlauf.typ = ""; }
+editor.addEventListener("beforeinput", e => {
+  if (e.inputType === "historyUndo") { e.preventDefault(); rueckgaengig(); return; }
+  if (e.inputType === "historyRedo") { e.preventDefault(); wiederholen(); return; }
+  const gruppe = /^insertText|^insertCompositionText/.test(e.inputType) ? "tippen" : /^delete/.test(e.inputType) ? "loeschen" : e.inputType;
+  if (gruppe !== verlauf.typ || Date.now() - verlauf.zeit > 1200 || gruppe === "insertParagraph" || (e.data && /[\s.,!?]/.test(e.data) && Date.now() - verlauf.zeit > 400)) merken(gruppe);
+  verlauf.zeit = Date.now();
+});
+$("#rueck").onclick = rueckgaengig; $("#vor").onclick = wiederholen;
+[$("#rueck"), $("#vor")].forEach(b => b.addEventListener("mousedown", e => e.preventDefault()));
+
+/* =====================================================================
+   Absätze ordnen: jeder Block bekommt eine ID (für die Zeichnungs-Anker)
+   ===================================================================== */
+const BLOECKE = new Set(["P", "H1", "H2", "H3", "UL", "OL", "TABLE", "BLOCKQUOTE", "DIV"]);
+const istPlatz = n => n && n.classList && n.classList.contains("zeichenplatz");
+function ordnen() {
+  const sel = getSelection(); const merk = sel.rangeCount ? [sel.anchorNode, sel.anchorOffset, sel.focusNode, sel.focusOffset] : null;
+  let veraendert = false;
+  if (!editor.firstChild || (editor.childNodes.length === 1 && editor.firstChild.nodeName === "BR")) { editor.innerHTML = "<p><br></p>"; veraendert = true; }
+  // lose Texte / Inline-Elemente in <p> packen, DIVs (außer Zeichenplatz) zu <p>, alte H4-H6 → H3
+  let sammel = null;
+  for (const n of [...editor.childNodes]) {
+    if (n.nodeType === 3 && !n.textContent.trim() && !sammel) { if (!n.textContent.length) n.remove(); continue; }
+    if (n.nodeType === 1 && BLOECKE.has(n.nodeName) && !(n.nodeName === "DIV" && !istPlatz(n))) { sammel = null; continue; }
+    if (n.nodeType === 1 && /^H[4-6]$/.test(n.nodeName)) { umbenennen(n, "h3"); sammel = null; veraendert = true; continue; }
+    if (n.nodeType === 1 && n.nodeName === "DIV") { umbenennen(n, "p"); sammel = null; veraendert = true; continue; }
+    if (!sammel) { sammel = document.createElement("p"); n.before(sammel); }
+    sammel.appendChild(n); veraendert = true;
+  }
+  // ungültig verschachtelte Blöcke (z. B. Liste in einem <p>) auflösen
+  for (const p of [...editor.querySelectorAll(":scope > p, :scope > h1, :scope > h2, :scope > h3")]) {
+    if (![...p.children].some(k => /^(UL|OL|P|TABLE|BLOCKQUOTE|H1|H2|H3|DIV)$/.test(k.nodeName))) continue;
+    let rest = null;
+    for (const n of [...p.childNodes]) {
+      if (n.nodeType === 1 && /^(UL|OL|P|TABLE|BLOCKQUOTE|H1|H2|H3|DIV)$/.test(n.nodeName)) { p.before(n); rest = null; }
+      else { if (!rest) { rest = document.createElement(p.nodeName.toLowerCase()); p.before(rest); } rest.appendChild(n); }
+    }
+    p.remove(); veraendert = true;
+  }
+  if (editor.lastElementChild && istPlatz(editor.lastElementChild)) { editor.appendChild(Object.assign(document.createElement("p"), { innerHTML: "<br>" })); }
+  // IDs vergeben / doppelte (nach Absatz-Teilung) erneuern
+  const gesehen = new Set();
+  for (const b of editor.children) {
+    if (!b.dataset.b || gesehen.has(b.dataset.b)) b.dataset.b = neueId();
+    gesehen.add(b.dataset.b);
+  }
+  if (veraendert && merk && merk[0] && editor.contains(merk[0])) { try { sel.setBaseAndExtent(merk[0], merk[1], merk[2], merk[3]); } catch { } }
+}
+function umbenennen(el, tag) {
+  const neu = document.createElement(tag);
+  for (const a of el.attributes) if (a.name !== "class" || tag === "blockquote" || tag === el.nodeName.toLowerCase()) neu.setAttribute(a.name, a.value);
+  while (el.firstChild) neu.appendChild(el.firstChild);
+  el.replaceWith(neu); return neu;
+}
+function blockVon(n) { while (n && n.parentNode !== editor) { if (n === editor || !n.parentNode) return null; n = n.parentNode; } return n; }
+function blockeInAuswahl() {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return [];
+  const r = s.getRangeAt(0); let a = blockVon(r.startContainer), b = blockVon(r.endContainer);
+  if (r.startContainer === editor) a = editor.children[r.startOffset] || editor.lastElementChild;
+  if (r.endContainer === editor) b = editor.children[Math.max(0, r.endOffset - 1)] || editor.lastElementChild;
+  if (!a || !b) return [];
+  const alle = [...editor.children], i = alle.indexOf(a), j = alle.indexOf(b);
+  return alle.slice(Math.min(i, j), Math.max(i, j) + 1).filter(x => !istPlatz(x));
+}
+
+/* =====================================================================
+   Formatvorlagen (wie in Word)
+   ===================================================================== */
+function vorlageAnwenden(v) {
+  ordnen();
+  const s = getSelection(); if (!s.rangeCount) { editor.focus(); return; }
+  const c = caretMerken();
+  const bloecke = blockeInAuswahl(); if (!bloecke.length) return;
+  merken();
+  const KASTEN = ["merke", "beispiel", "zitat"];
+  if (KASTEN.includes(v)) {
+    const schonGleich = bloecke.length === 1 && bloecke[0].nodeName === "BLOCKQUOTE" && bloecke[0].classList.contains(v);
+    if (schonGleich) { kastenAufloesen(bloecke[0]); }
+    else if (bloecke.length === 1 && bloecke[0].nodeName === "BLOCKQUOTE") { bloecke[0].className = v; }
+    else {
+      const k = document.createElement("blockquote"); k.className = v; k.dataset.b = neueId();
+      bloecke[0].before(k);
+      for (const b of bloecke) {
+        if (b.nodeName === "BLOCKQUOTE") { while (b.firstChild) k.appendChild(b.firstChild); b.remove(); }
+        else k.appendChild(b);
+      }
+    }
+  } else {
+    for (let b of bloecke) {
+      if (b.nodeName === "BLOCKQUOTE") { const kinder = kastenAufloesen(b); kinder.forEach(k => { if (/^(P|H1|H2|H3)$/.test(k.nodeName)) umbenennen(k, v); }); continue; }
+      if (b.nodeName === "UL" || b.nodeName === "OL") { if (v === "p") continue; const li = [...b.children]; li.forEach(l => { const n = document.createElement(v); while (l.firstChild) n.appendChild(l.firstChild); b.before(n); }); b.remove(); continue; }
+      if (b.nodeName === "TABLE") continue;
+      if (b.nodeName.toLowerCase() !== v) umbenennen(b, v);
+    }
+  }
+  caretZurueck(c);
+  neuOrdnen(); geaendert(); vorlageAnzeigen();
+}
+function kastenAufloesen(k) {
+  const kinder = [];
+  if (![...k.childNodes].some(n => n.nodeType === 1 && BLOECKE.has(n.nodeName))) { const p = document.createElement("p"); while (k.firstChild) p.appendChild(k.firstChild); k.appendChild(p); }
+  while (k.firstChild) { const c = k.firstChild; k.before(c); if (c.nodeType === 1) kinder.push(c); }
+  k.remove(); return kinder;
+}
+function aktuelleVorlage() {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return null;
+  const b = blockVon(s.anchorNode); if (!b) return null;
+  if (b.nodeName === "BLOCKQUOTE") return ["merke", "beispiel", "zitat"].find(k => b.classList.contains(k)) || "merke";
+  if (/^H[1-3]$/.test(b.nodeName)) return b.nodeName.toLowerCase();
+  if (b.nodeName === "P") return "p";
+  return null;
+}
+function vorlageAnzeigen() { const v = aktuelleVorlage(); $$(".vorlage").forEach(b => b.classList.toggle("an", b.dataset.vorlage === v)); }
+$$("[data-vorlage]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => vorlageAnwenden(b.dataset.vorlage); });
+
+/* =====================================================================
+   Schrift
+   ===================================================================== */
+function befehl(cmd, wert = null) {
+  if (!editor.contains(getSelection().anchorNode)) editor.focus();
+  merken(); document.execCommand("styleWithCSS", false, cmd === "hiliteColor" || cmd === "foreColor");
+  document.execCommand(cmd, false, wert); neuOrdnen(); geaendert();
+}
+$$("[data-cmd]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => befehl(b.dataset.cmd); });
+$$("[data-textfarbe]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => befehl("foreColor", b.dataset.textfarbe); });
+$("#markieren").addEventListener("mousedown", e => e.preventDefault());
+$("#markieren").onclick = () => befehl("hiliteColor", "#FFF176");
+
+/* =====================================================================
+   Aufzählungen und Nummerierungen
+   ===================================================================== */
+function listeAnCaret() { const s = getSelection(); let n = s.anchorNode; while (n && n !== editor) { if (n.nodeName === "UL" || n.nodeName === "OL") return n; n = n.parentNode; } return null; }
+function aeussersteListe(l) { while (l && l.parentNode && l.parentNode !== editor && (l.parentNode.closest("ul,ol"))) l = l.parentNode.closest("ul,ol"); return l; }
+function liste(art) {
+  if (!editor.contains(getSelection().anchorNode)) editor.focus();
+  const tag = ["punkte", "striche"].includes(art) ? "UL" : "OL";
+  const klasse = { striche: "striche", buchstaben: "buchstaben", roemisch: "roemisch" }[art] || "";
+  const l = listeAnCaret();
+  const c = caretMerken();
+  merken();
+  if (l) {
+    const o = aeussersteListe(l);
+    const gleicheArt = o.nodeName === tag && (o.className || "") === klasse;
+    if (art === "aus" || gleicheArt) listeAufloesen(o);           // gleiche Art nochmal → ausschalten
+    else if (o.nodeName === tag) { if (klasse) o.className = klasse; else o.removeAttribute("class"); }
+    else { const n = umbenennen(o, tag.toLowerCase()); n.querySelectorAll(o.nodeName.toLowerCase()).forEach(x => umbenennen(x, tag.toLowerCase())); if (klasse) n.className = klasse; else n.removeAttribute("class"); }
+  } else if (art !== "aus") {
+    const absaetze = absaetzeInAuswahl(); if (!absaetze.length) { verlauf.zurueck.pop(); return; }
+    const neu = document.createElement(tag.toLowerCase()); if (klasse) neu.className = klasse;
+    absaetze[0].before(neu);
+    for (const a of absaetze) { const li = document.createElement("li"); while (a.firstChild) li.appendChild(a.firstChild); if (!li.firstChild) li.innerHTML = "<br>"; neu.appendChild(li); a.remove(); }
+    if (neu.parentNode === editor) neu.dataset.b = absaetze[0].dataset.b || neueId();
+  }
+  caretZurueck(c);
+  neuOrdnen(); geaendert(); listeAnzeigen();
+}
+/* Absätze (p/Überschrift) in der Auswahl – auch innerhalb von Kästen */
+function absaetzeInAuswahl() {
+  const s = getSelection(); if (!s.rangeCount || !editor.contains(s.anchorNode)) return [];
+  const r = s.getRangeAt(0);
+  const absatz = n => { n = n.nodeType === 1 ? n : n.parentNode; const a = n.closest("p,h1,h2,h3"); return a && editor.contains(a) ? a : null; };
+  const a = absatz(r.startContainer.nodeType === 1 && r.startContainer.childNodes[r.startOffset] || r.startContainer) || absatz(r.startContainer), b = absatz(r.endContainer) || a;
+  if (!a) return [];
+  if (a.parentNode !== b.parentNode) return [a];
+  const k = [...a.parentNode.children], i = k.indexOf(a), j = k.indexOf(b);
+  return k.slice(Math.min(i, j), Math.max(i, j) + 1).filter(x => /^(P|H1|H2|H3)$/.test(x.nodeName) && !x.classList.contains("bildquelle"));
+}
+function listeAufloesen(liste) {
+  const raus = [];
+  (function flach(l) { for (const li of [...l.children]) { if (li.nodeName === "UL" || li.nodeName === "OL") { flach(li); continue; } const p = document.createElement("p"); for (const n of [...li.childNodes]) { if (n.nodeName === "UL" || n.nodeName === "OL") continue; p.appendChild(n); } if (!p.firstChild) p.innerHTML = "<br>"; raus.push(p); for (const sub of li.querySelectorAll(":scope > ul, :scope > ol")) flach(sub); } })(liste);
+  raus.forEach(p => liste.before(p)); liste.remove();
+}
+function listeAnzeigen() {
+  const l = listeAnCaret(), o = l && aeussersteListe(l);
+  const art = !o ? null : o.nodeName === "UL" ? (o.classList.contains("striche") ? "striche" : "punkte") : (o.classList.contains("buchstaben") ? "buchstaben" : o.classList.contains("roemisch") ? "roemisch" : "nummern");
+  $$(".band [data-liste]").forEach(b => b.classList.toggle("an", b.dataset.liste === art));
+}
+$$("[data-liste]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => { $("#listenmenue").classList.remove("offen"); liste(b.dataset.liste); }; });
+$("#listenmenue-knopf").addEventListener("mousedown", e => e.preventDefault());
+$("#listenmenue-knopf").onclick = e => {
+  const m = $("#listenmenue"), r = e.currentTarget.getBoundingClientRect();
+  m.style.left = r.left + "px"; m.style.top = (r.bottom + 4) + "px"; m.classList.toggle("offen");
+};
+document.addEventListener("mousedown", e => { if (!e.target.closest("#listenmenue,#listenmenue-knopf")) $("#listenmenue").classList.remove("offen"); });
+function einzug(mehr) {
+  if (!editor.contains(getSelection().anchorNode)) editor.focus();
+  merken();
+  if (listeAnCaret()) document.execCommand(mehr ? "indent" : "outdent");
+  else if (mehr) document.execCommand("insertText", false, "    ");
+  neuOrdnen(); geaendert();
+}
+$("#einruecken").addEventListener("mousedown", e => e.preventDefault()); $("#einruecken").onclick = () => einzug(true);
+$("#ausruecken").addEventListener("mousedown", e => e.preventDefault()); $("#ausruecken").onclick = () => einzug(false);
+
+/* Autoformat: „- “, „* “, „1. “, „a) “ am Zeilenanfang */
+function autoformat(e) {
+  const s = getSelection(); if (!s.isCollapsed || listeAnCaret()) return false;
+  const b = blockVon(s.anchorNode); if (!b || b.nodeName !== "P") return false;
+  const vorher = document.createRange(); vorher.setStart(b, 0); vorher.setEnd(s.anchorNode, s.anchorOffset);
+  const t = vorher.toString();
+  const art = /^[-–]$/.test(t) ? "striche" : /^[*•]$/.test(t) ? "punkte" : /^1[.)]$/.test(t) ? "nummern" : /^a\)$/.test(t) ? "buchstaben" : /^I\.$/.test(t) ? "roemisch" : null;
+  if (!art) return false;
+  e.preventDefault(); merken();
+  s.removeAllRanges(); s.addRange(vorher); document.execCommand("delete");
+  if (!b.textContent.length && !b.querySelector("br")) b.innerHTML = "<br>";
+  liste(art); return true;
+}
+
+/* =====================================================================
+   Tastatur
+   ===================================================================== */
+document.addEventListener("keydown", e => {
+  const imEditor = editor.contains(document.activeElement) || document.activeElement === editor;
+  const strg = e.ctrlKey || e.metaKey;
+  const offenerDialog = $(".dialog-hg.offen");
+  if (offenerDialog) { if (e.key === "Escape") offenerDialog.classList.remove("offen"); return; }
+  if (document.activeElement === $("#tinte-eingabe")) return;
+  if (strg && !e.altKey && e.key.toLowerCase() === "z" && (imEditor || document.body.classList.contains("stiftmodus") || document.activeElement === document.body)) { e.preventDefault(); e.shiftKey ? wiederholen() : rueckgaengig(); return; }
+  if (strg && e.key.toLowerCase() === "y" && (imEditor || document.activeElement === document.body)) { e.preventDefault(); wiederholen(); return; }
+  if (strg && e.key.toLowerCase() === "s") { e.preventDefault(); speichern(); meldung("Gespeichert ✓"); return; }
+  if (e.key === "Escape" && document.body.classList.contains("stiftmodus")) { werkzeugWaehlen("tippen"); return; }
+  if (gewaehltesBild && (e.key === "Delete" || e.key === "Backspace")) { e.preventDefault(); merken(); const p = gewaehltesBild.closest("p"); gewaehltesBild.remove(); if (p && !p.textContent.trim() && !p.querySelector("img")) p.remove(); bildMenueZu(); neuOrdnen(); geaendert(); return; }
+  if (!imEditor) return;
+  if (strg && e.altKey && ["1", "2", "3"].includes(e.key)) { e.preventDefault(); vorlageAnwenden("h" + e.key); return; }
+  if (strg && e.shiftKey && e.key.toLowerCase() === "n") { e.preventDefault(); vorlageAnwenden("p"); return; }
+  if (strg && e.shiftKey && e.key.toLowerCase() === "l") { e.preventDefault(); liste("punkte"); return; }
+  if (e.key === " " && autoformat(e)) return;
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const zelle = getSelection().anchorNode && (getSelection().anchorNode.nodeType === 1 ? getSelection().anchorNode : getSelection().anchorNode.parentNode).closest("td,th");
+    if (zelle && editor.contains(zelle)) { naechsteZelle(zelle, e.shiftKey); return; }
+    einzug(!e.shiftKey); return;
+  }
+  if (e.key === "Enter" && !e.shiftKey) {
+    // Leere Zeile am Ende eines Kastens → Kasten verlassen (wie in Word)
+    const s = getSelection(); const b = s.anchorNode && (s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentNode).closest("blockquote > p, blockquote > h1, blockquote > h2, blockquote > h3");
+    if (b && editor.contains(b) && !b.textContent.trim() && !b.nextElementSibling && !b.querySelector("img")) {
+      e.preventDefault(); merken(); const k = b.parentNode; const p = document.createElement("p"); p.innerHTML = "<br>"; k.after(p); b.remove();
+      if (!k.textContent.trim() && !k.querySelector("img")) k.remove();
+      const r = document.createRange(); r.setStart(p, 0); r.collapse(true); s.removeAllRanges(); s.addRange(r); neuOrdnen(); geaendert(); return;
+    }
+  }
+});
+document.addEventListener("selectionchange", () => { if (editor.contains(getSelection().anchorNode)) { vorlageAnzeigen(); listeAnzeigen(); } });
+
+/* =====================================================================
+   Tabellen
+   ===================================================================== */
+$("#tabelle").addEventListener("mousedown", e => e.preventDefault());
+$("#tabelle").onclick = () => {
+  if (!editor.contains(getSelection().anchorNode)) editor.focus();
+  let h = "<table><tbody>"; for (let r = 0; r < 3; r++) { h += "<tr>"; for (let c = 0; c < 3; c++) h += "<td><br></td>"; h += "</tr>"; } h += "</tbody></table><p><br></p>";
+  befehl("insertHTML", h);
+};
+function naechsteZelle(z, zurueck) {
+  const alle = [...z.closest("table").querySelectorAll("td,th")]; let i = alle.indexOf(z) + (zurueck ? -1 : 1);
+  if (i >= alle.length) { merken(); const tr = z.closest("tr"), neu = tr.cloneNode(true); neu.querySelectorAll("td,th").forEach(c => c.innerHTML = "<br>"); tr.parentNode.appendChild(neu); i = alle.length; geaendert(); }
+  const ziel = [...z.closest("table").querySelectorAll("td,th")][Math.max(0, i)];
+  const r = document.createRange(); r.selectNodeContents(ziel); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r);
+}
+
+/* =====================================================================
+   Bilder
+   ===================================================================== */
+const ladeBild = src => new Promise((ok, nein) => { const i = new Image(); i.onload = () => ok(i); i.onerror = nein; i.src = src; });
+const alsDataURL = f => new Promise((ok, nein) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = nein; r.readAsDataURL(f); });
+async function normalisieren(src, typHinweis = "") {
+  const img = await ladeBild(src);
+  const max = 1600, f = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const typ = (src.match(/^data:(image\/[a-z+.-]+)/i) || [])[1] || typHinweis;
+  const jpg = /jpe?g/i.test(typ);
+  if (f === 1 && (jpg || /png/i.test(typ))) return src;
+  const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * f); c.height = Math.round(img.naturalHeight * f);
+  const x = c.getContext("2d"); if (jpg) { x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); }
+  x.drawImage(img, 0, 0, c.width, c.height);
+  return jpg ? c.toDataURL("image/jpeg", .9) : c.toDataURL("image/png");
+}
+function bildEinfuegen(src, { breite = "60%", quelle = "" } = {}) {
+  if (!editor.contains(getSelection().anchorNode)) { editor.focus(); const r = document.createRange(); r.selectNodeContents(editor); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r); }
+  const img = document.createElement("img"); img.src = src; img.style.width = breite; if (quelle) img.dataset.quelle = quelle;
+  let h = `<p class="bildabsatz">${img.outerHTML}</p>`;
+  if (quelle) h += `<p class="bildquelle">${esc(quelle)}</p>`;
+  befehl("insertHTML", h + "<p><br></p>");
+}
+async function dateienEinfuegen(dateien) {
+  for (const f of dateien) if (f.type.startsWith("image/")) bildEinfuegen(await normalisieren(await alsDataURL(f), f.type));
+}
+$("#bild").addEventListener("mousedown", e => e.preventDefault());
+$("#bild").onclick = () => $("#bilddatei").click();
+$("#bilddatei").onchange = async e => { await dateienEinfuegen([...e.target.files]); e.target.value = ""; };
+
+/* Bilder mit Internet-Adresse (z. B. nach Einfügen aus einer Webseite) in die Datei holen */
+async function fremdeBilderEinbetten() {
+  const fremde = [...editor.querySelectorAll("img")].filter(i => /^https?:/i.test(i.getAttribute("src") || ""));
+  for (const i of fremde) {
+    const r = await API.bildLaden(i.src);
+    if (r.ok) { i.src = await normalisieren(r.src); if (!i.style.width) i.style.width = "60%"; }
+    else i.remove();
+  }
+  if (fremde.length) geaendert();
+}
+
+/* Einfügen: Bilder aus der Zwischenablage, Text aus Webseiten aufräumen */
+const ERLAUBT = { P: "p", DIV: "p", H1: "h1", H2: "h2", H3: "h3", H4: "h3", H5: "h3", H6: "h3", B: "b", STRONG: "b", I: "i", EM: "i", U: "u", BR: "br", UL: "ul", OL: "ol", LI: "li", TABLE: "table", TBODY: "tbody", THEAD: "tbody", TR: "tr", TD: "td", TH: "td", IMG: "img", BLOCKQUOTE: "blockquote", SUB: "sub", SUP: "sup" };
+function saeubern(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const raus = document.createElement("div");
+  (function kopiere(von, nach) {
+    for (const n of von.childNodes) {
+      if (n.nodeType === 3) { nach.appendChild(document.createTextNode(n.textContent.replace(/\s+/g, " "))); continue; }
+      if (n.nodeType !== 1 || /^(SCRIPT|STYLE|META|LINK|TITLE|NOSCRIPT|IFRAME|svg)$/i.test(n.nodeName)) continue;
+      const tag = ERLAUBT[n.nodeName];
+      if (!tag) { kopiere(n, nach); continue; }
+      const el = document.createElement(tag);
+      if (tag === "img") { const s = n.getAttribute("src") || ""; if (!/^(https?:|data:image)/.test(s)) continue; el.src = s; el.style.width = "60%"; nach.appendChild(el); continue; }
+      const st = n.getAttribute("style") || "";
+      if (/font-weight:\s*(bold|[6-9]00)/.test(st) && !["b", "h1", "h2", "h3"].includes(tag)) { const b = document.createElement("b"); el.appendChild(b); kopiere(n, b); nach.appendChild(el); continue; }
+      kopiere(n, el); nach.appendChild(el);
+    }
+  })(doc.body, raus);
+  raus.querySelectorAll("p,li,td,h1,h2,h3").forEach(e => { if (!e.textContent.trim() && !e.querySelector("img,br")) e.innerHTML = e.nodeName === "TD" ? "<br>" : ""; });
+  raus.querySelectorAll("p:empty,h1:empty,h2:empty,h3:empty").forEach(e => e.remove());
+  return raus.innerHTML;
+}
+editor.addEventListener("paste", async e => {
+  const cd = e.clipboardData; if (!cd) return;
+  const bilder = [...cd.files].filter(f => f.type.startsWith("image/"));
+  const html = cd.getData("text/html");
+  if (bilder.length && !html) { e.preventDefault(); await dateienEinfuegen(bilder); return; }
+  if (html) { e.preventDefault(); befehl("insertHTML", saeubern(html)); await fremdeBilderEinbetten(); return; }
+  // reiner Text: normal einfügen lassen
+  merken("einfuegen");
+});
+editor.addEventListener("dragover", e => { e.preventDefault(); });
+editor.addEventListener("drop", async e => {
+  const dt = e.dataTransfer; const dateien = [...dt.files].filter(f => f.type.startsWith("image/"));
+  const html = dt.getData("text/html"), uri = (dt.getData("text/uri-list") || "").split("\n").find(z => /^https?:/.test(z));
+  const imgAusHtml = html && (html.match(/<img[^>]+src="([^"]+)"/i) || [])[1];
+  if (!dateien.length && !imgAusHtml && !(uri && /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(uri))) return; // normales Text-Ziehen
+  e.preventDefault();
+  const r = document.caretRangeFromPoint && document.caretRangeFromPoint(e.clientX, e.clientY);
+  if (r) { getSelection().removeAllRanges(); getSelection().addRange(r); }
+  if (dateien.length) { await dateienEinfuegen(dateien); return; }
+  await bildVonAdresse((imgAusHtml || uri).replace(/&amp;/g, "&"));
+});
+async function bildVonAdresse(url, quelle = "") {
+  if (/^data:image/.test(url)) { bildEinfuegen(await normalisieren(url), { quelle }); return true; }
+  meldung("Bild wird geladen …", 8000);
+  const r = await API.bildLaden(url);
+  if (!r.ok) { meldung("Das Bild konnte nicht geladen werden: " + (r.grund || "")); return false; }
+  bildEinfuegen(await normalisieren(r.src), { quelle }); meldung("Bild eingefügt ✓"); return true;
+}
+
+/* Bild anklicken → Menü */
+let gewaehltesBild = null;
+function bildMenueZu() { if (gewaehltesBild) gewaehltesBild.classList.remove("gewaehlt"); gewaehltesBild = null; $("#bildmenue").style.display = "none"; }
+function bildMenueAuf(img) {
+  if (gewaehltesBild && gewaehltesBild !== img) gewaehltesBild.classList.remove("gewaehlt");
+  gewaehltesBild = img; img.classList.add("gewaehlt");
+  const r = img.getBoundingClientRect(), m = $("#bildmenue");
+  m.style.display = "flex"; m.style.left = Math.max(8, r.left) + "px"; m.style.top = Math.max(150, r.top - 42) + "px";
+}
+editor.addEventListener("click", e => { if (e.target.tagName === "IMG") bildMenueAuf(e.target); else bildMenueZu(); });
+flaeche.addEventListener("scroll", () => { if (gewaehltesBild) bildMenueAuf(gewaehltesBild); }, { passive: true });
+$$("[data-bild]").forEach(b => b.onclick = () => {
+  const img = gewaehltesBild; if (!img) return; merken();
+  const jetzt = parseFloat(img.style.width) || Math.round(img.getBoundingClientRect().width / editor.clientWidth * 100);
+  const a = b.dataset.bild, p = img.closest("p");
+  if (a === "kleiner") img.style.width = Math.max(10, jetzt - 10) + "%";
+  if (a === "groesser") img.style.width = Math.min(100, jetzt + 10) + "%";
+  if (a === "links" && p) p.style.textAlign = "left";
+  if (a === "mitte" && p) p.style.textAlign = "center";
+  if (a === "loeschen") { img.remove(); if (p && !p.textContent.trim() && !p.querySelector("img")) p.remove(); bildMenueZu(); neuOrdnen(); geaendert(); return; }
+  neuOrdnen(); geaendert(); requestAnimationFrame(() => bildMenueAuf(img));
+});
+
+/* Onlinebild-Dialog */
+$("#netzbild-knopf").addEventListener("mousedown", e => e.preventDefault());
+let netzAuswahl = null;
+$("#netzbild-knopf").onclick = () => { const s = getSelection(); netzAuswahl = s.rangeCount && editor.contains(s.anchorNode) ? s.getRangeAt(0).cloneRange() : null; dialog("#netzbild"); setTimeout(() => $("#suchbegriff").focus(), 50); };
+$$("[data-reiter]").forEach(b => b.onclick = () => {
+  $$("[data-reiter]").forEach(x => x.classList.toggle("an", x === b));
+  $("#r-suche").style.display = b.dataset.reiter === "suche" ? "" : "none"; $("#r-adresse").style.display = b.dataset.reiter === "adresse" ? "" : "none";
+  setTimeout(() => (b.dataset.reiter === "suche" ? $("#suchbegriff") : $("#bildadresse")).focus(), 30);
+});
+function auswahlZurueck() { if (netzAuswahl) { editor.focus(); getSelection().removeAllRanges(); getSelection().addRange(netzAuswahl); } }
+$("#suchform").onsubmit = async e => {
+  e.preventDefault(); const q = $("#suchbegriff").value.trim(); if (!q) return;
+  const raster = $("#suchtreffer"); raster.innerHTML = '<div class="leer">Suche läuft …</div>';
+  const r = await API.bildSuchen(q, 0);
+  if (!r.ok) { raster.innerHTML = `<div class="leer">Suche nicht möglich (${esc(r.grund || "keine Verbindung")}).</div>`; return; }
+  if (!r.treffer.length) { raster.innerHTML = '<div class="leer">Nichts gefunden – probier ein anderes Wort (auch Englisch hilft oft).</div>'; return; }
+  raster.innerHTML = "";
+  for (const t of r.treffer) {
+    const b = document.createElement("button"); b.className = "treffer"; b.title = `${t.titel}\n${t.urheber || ""} ${t.lizenz || ""}`;
+    b.innerHTML = `<img loading="lazy" src="${esc(t.vorschau)}" alt=""><span>${esc(t.titel)}</span>`;
+    b.onclick = async () => {
+      dialog("#netzbild", false); auswahlZurueck();
+      const quelle = `Bild: ${t.titel}${t.urheber ? " – " + t.urheber : ""}${t.lizenz ? ", " + t.lizenz : ""} (Wikimedia Commons)`;
+      await bildVonAdresse(t.bild, quelle);
+    };
+    raster.appendChild(b);
+  }
+};
+$("#adressform").onsubmit = async e => {
+  e.preventDefault(); const u = $("#bildadresse").value.trim(); if (!u) return;
+  dialog("#netzbild", false); auswahlZurueck();
+  if (await bildVonAdresse(u)) $("#bildadresse").value = "";
+};
+
+/* =====================================================================
+   Zeichnen direkt auf dem Blatt
+   ===================================================================== */
+const STIFTFARBEN = ["#1F2328", "#D32F2F", "#1565C0", "#2E7D32", "#EF6C00", "#7B1FA2", "#FBC02D"];
+let werkzeug = "tippen", stiftFarbe = STIFTFARBEN[1], stiftDicke = 3.5;
+STIFTFARBEN.forEach((f, i) => { const b = document.createElement("button"); b.className = "farbe" + (i === 1 ? " an" : ""); b.style.background = f; b.title = "Stiftfarbe";
+  b.onclick = () => { stiftFarbe = f; $$("#stiftfarben .farbe").forEach(x => x.classList.toggle("an", x === b)); if (werkzeug === "tippen" || werkzeug === "radierer") werkzeugWaehlen("stift"); }; $("#stiftfarben").appendChild(b); });
+$$(".dicke").forEach(b => b.onclick = () => { stiftDicke = +b.dataset.dicke; $$(".dicke").forEach(x => x.classList.toggle("an", x === b)); });
+function werkzeugWaehlen(w) {
+  textEingabeFertig();
+  werkzeug = w;
+  $$("#werkzeuge [data-wz]").forEach(b => b.classList.toggle("an", b.dataset.wz === w));
+  document.body.classList.toggle("stiftmodus", w !== "tippen");
+  document.body.className = document.body.className.replace(/\bwz-\S+/g, "").trim();
+  if (w !== "tippen") { document.body.classList.add("wz-" + w); getSelection().removeAllRanges(); bildMenueZu(); }
+  else editor.focus({ preventScroll: true });
+}
+$$("#werkzeuge [data-wz]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => werkzeugWaehlen(b.dataset.wz); });
+
+/* Position eines Blocks auf dem Blatt */
+const oben = b => b.offsetTop;
+const unten = b => b.offsetTop + b.offsetHeight;
+function blockAnHoehe(y) {
+  const k = [...editor.children]; if (!k.length) return null;
+  for (let i = 0; i < k.length; i++) { const naechster = k[i + 1]; if (y < (naechster ? oben(naechster) : Infinity)) return y < oben(k[0]) ? k[0] : k[i]; }
+  return k[k.length - 1];
+}
+const blockMitId = id => id ? editor.querySelector(`:scope > [data-b="${id}"]`) : null;
+function ankerOben(s) { const b = blockMitId(s.anker); if (b) { s.letzteOben = oben(b); return s.letzteOben; } return s.letzteOben || 0; }
+function grenzen(s) {
+  if (s.typ === "text") { const z = s.text.split("\n"); const w = Math.max(...z.map(t => textBreite(t, s.groesse))); return { x0: s.x, x1: s.x + w, y0: s.dy - s.groesse * .15, y1: s.dy + z.length * s.groesse * 1.25 }; }
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [x, y] of s.pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const r = (s.typ === "marker" ? s.dicke * 4 : s.dicke) / 2 + (s.typ === "pfeil" ? 8 : 0);
+  return { x0: x0 - r, x1: x1 + r, y0: y0 - r, y1: y1 + r };
+}
+const absGrenzen = s => { const g = grenzen(s), o = ankerOben(s); return { x0: g.x0, x1: g.x1, y0: g.y0 + o, y1: g.y1 + o }; };
+const messCanvas = document.createElement("canvas").getContext("2d");
+function textBreite(t, g) { messCanvas.font = `${g}px "Segoe Print","Segoe UI",sans-serif`; return messCanvas.measureText(t).width; }
+
+/* SVG-Formen */
+function pfadD(pts) {
+  if (!pts.length) return "";
+  if (pts.length === 1) { const [x, y] = pts[0]; return `M${x} ${y}l0.1 0.1`; }
+  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; d += `Q${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`; }
+  const l = pts[pts.length - 1]; return d + `L${l[0].toFixed(1)} ${l[1].toFixed(1)}`;
+}
+function form(s, dy = 0) {
+  const g = document.createElementNS(SVGNS, "g");
+  g.setAttribute("data-id", s.id);
+  if (dy) g.setAttribute("transform", `translate(0 ${dy.toFixed(1)})`);
+  const pfad = (d, extra = {}) => { const p = document.createElementNS(SVGNS, "path"); p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", s.farbe); p.setAttribute("stroke-width", s.dicke); p.setAttribute("stroke-linecap", "round"); p.setAttribute("stroke-linejoin", "round"); for (const k in extra) p.setAttribute(k, extra[k]); g.appendChild(p); return p; };
+  if (s.typ === "stift") pfad(pfadD(s.pts));
+  else if (s.typ === "marker") pfad(pfadD(s.pts), { "stroke-width": s.dicke * 4, "stroke-opacity": .35, "stroke-linecap": "butt" });
+  else if (s.typ === "linie" || s.typ === "pfeil") {
+    const [a, b] = [s.pts[0], s.pts[s.pts.length - 1]]; pfad(`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`);
+    if (s.typ === "pfeil") { const w = Math.atan2(b[1] - a[1], b[0] - a[0]), l = Math.max(11, s.dicke * 3.5); const p1 = [b[0] - l * Math.cos(w - .45), b[1] - l * Math.sin(w - .45)], p2 = [b[0] - l * Math.cos(w + .45), b[1] - l * Math.sin(w + .45)];
+      pfad(`M${p1[0]} ${p1[1]}L${b[0]} ${b[1]}L${p2[0]} ${p2[1]}Z`, { fill: s.farbe }); }
+  } else if (s.typ === "rahmen") {
+    const [a, b] = [s.pts[0], s.pts[s.pts.length - 1]]; const e = document.createElementNS(SVGNS, "ellipse");
+    e.setAttribute("cx", (a[0] + b[0]) / 2); e.setAttribute("cy", (a[1] + b[1]) / 2); e.setAttribute("rx", Math.max(1, Math.abs(b[0] - a[0]) / 2)); e.setAttribute("ry", Math.max(1, Math.abs(b[1] - a[1]) / 2));
+    e.setAttribute("fill", "none"); e.setAttribute("stroke", s.farbe); e.setAttribute("stroke-width", s.dicke); g.appendChild(e);
+  } else if (s.typ === "text") {
+    s.text.split("\n").forEach((z, i) => { const t = document.createElementNS(SVGNS, "text"); t.setAttribute("x", s.x); t.setAttribute("y", s.dy + s.groesse * (i + .95)); t.setAttribute("fill", s.farbe); t.setAttribute("font-size", s.groesse); t.textContent = z; g.appendChild(t); });
+  }
+  return g;
+}
+
+/* Alles neu anordnen: Zeichenplätze anpassen, Striche an ihre Absätze hängen */
+let ordnenGeplant = false;
+function neuOrdnen() { if (ordnenGeplant) return; ordnenGeplant = true; requestAnimationFrame(() => { ordnenGeplant = false; layout(); }); }
+function layout() {
+  ordnen();
+  // Striche ohne gültigen Anker neu verankern
+  for (const s of striche) if (!blockMitId(s.anker)) {
+    const g = grenzen(s), absY = (s.letzteOben || 0) + g.y0, b = blockAnHoehe(absY);
+    if (b) { const neuOben = oben(b); verschiebeY(s, (s.letzteOben || 0) - neuOben); s.anker = b.dataset.b; s.letzteOben = neuOben; }
+  }
+  // Zeichenplätze: Höhe = was die Zeichnungen darüber/darin brauchen
+  const kinder = [...editor.children];
+  let gruppe = [];
+  for (const k of kinder) {
+    if (!istPlatz(k)) { gruppe.push(k.dataset.b); continue; }
+    const ids = new Set([...gruppe, k.dataset.b]);
+    const kOben = oben(k); let bedarf = 0, eigene = 0;
+    for (const s of striche) if (ids.has(s.anker)) { const g = absGrenzen(s); bedarf = Math.max(bedarf, g.y1 - kOben + 14); if (s.anker === k.dataset.b) eigene++; }
+    if (bedarf <= 2 && !eigene) { k.remove(); continue; }
+    const h = Math.max(0, Math.ceil(bedarf)); if (parseInt(k.style.height) !== h) k.style.height = h + "px";
+    gruppe = [];
+  }
+  ordnen();
+  zeichneAlles();
+  // Blatt mindestens so hoch wie Text + Zeichnungen + Platz zum Weiterzeichnen
+  let maxY = editor.offsetTop + editor.offsetHeight;
+  for (const s of striche) maxY = Math.max(maxY, absGrenzen(s).y1);
+  blatt.style.minHeight = Math.max(1123, maxY + 320) + "px";
+}
+function verschiebeY(s, d) { if (s.typ === "text") s.dy += d; else s.pts = s.pts.map(([x, y]) => [x, y + d]); }
+function zeichneAlles() {
+  const frag = document.createDocumentFragment();
+  for (const s of striche) frag.appendChild(form(s, ankerOben(s)));
+  svg.replaceChildren(frag);
+  if (aktiv) svg.appendChild(form(aktiv.s));
+}
+/* Nach einem Strich in freiem Platz unter dem Text: Zeichenplatz reservieren, damit Text darunter weitergeht */
+function platzSichern(s) {
+  const a = blockMitId(s.anker); if (!a) return;
+  const g = absGrenzen(s); let L = a, n = a.nextElementSibling;
+  while (n && !istPlatz(n) && oben(n) < g.y1) { L = n; n = n.nextElementSibling; }
+  if (n && istPlatz(n)) return; // vorhandener Platz wächst automatisch
+  if (n) return;                 // Strich endet vor dem nächsten Absatz
+  if (g.y1 <= unten(L) + 2) return;
+  const platz = document.createElement("div"); platz.className = "zeichenplatz"; platz.contentEditable = "false"; platz.dataset.b = neueId();
+  L.after(platz);
+  if (!platz.nextElementSibling) { const p = document.createElement("p"); p.innerHTML = "<br>"; platz.after(p); }
+}
+
+/* Zeichnen mit Maus, Stift oder Finger */
+let aktiv = null;
+const posAufBlatt = e => { const r = blatt.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+function strichStart(e) {
+  const [x, y] = posAufBlatt(e);
+  if (werkzeug === "text") { textEingabeStart(x, y, e); return; }
+  if (werkzeug === "radierer") { merken(); aktiv = { radierer: true }; radiere(x, y); return; }
+  const typ = werkzeug === "tippen" ? "stift" : werkzeug;
+  aktiv = { s: { id: neueId(), typ, farbe: typ === "marker" && stiftFarbe === STIFTFARBEN[0] ? "#FBC02D" : stiftFarbe, dicke: stiftDicke, pts: [[x, y]] } };
+  svg.appendChild(form(aktiv.s));
+}
+function strichWeiter(e) {
+  if (!aktiv) return;
+  const ev = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const p of (ev.length ? ev : [e])) {
+    const [x, y] = posAufBlatt(p);
+    if (aktiv.radierer) { radiere(x, y); continue; }
+    const s = aktiv.s;
+    if (["stift", "marker"].includes(s.typ)) { const l = s.pts[s.pts.length - 1]; if (Math.hypot(x - l[0], y - l[1]) > 1.2) s.pts.push([x, y]); }
+    else { let [x2, y2] = [x, y]; if (e.shiftKey && s.typ !== "rahmen") { if (Math.abs(x - s.pts[0][0]) > Math.abs(y - s.pts[0][1])) y2 = s.pts[0][1]; else x2 = s.pts[0][0]; } s.pts = [s.pts[0], [x2, y2]]; }
+  }
+  if (!aktiv.radierer) { const alt = svg.querySelector(`[data-id="${aktiv.s.id}"]`); const neu = form(aktiv.s); alt ? alt.replaceWith(neu) : svg.appendChild(neu); }
+}
+function strichEnde() {
+  if (!aktiv) return;
+  const a = aktiv; aktiv = null;
+  if (a.radierer) { if (!a.geloescht) verlauf.zurueck.pop(); layout(); geaendert(); return; }
+  const s = a.s;
+  if (s.typ !== "stift" && s.typ !== "marker" && Math.hypot(s.pts[1] ? s.pts[1][0] - s.pts[0][0] : 0, s.pts[1] ? s.pts[1][1] - s.pts[0][1] : 0) < 4) { zeichneAlles(); return; }
+  merken("zeichnen");
+  ordnen();
+  const b = blockAnHoehe(s.pts[0][1]) || editor.firstElementChild; const o = oben(b);
+  s.anker = b.dataset.b; s.letzteOben = o; s.pts = s.pts.map(([x, y]) => [Math.round(x * 10) / 10, Math.round((y - o) * 10) / 10]);
+  striche.push(s);
+  platzSichern(s); layout(); geaendert();
+}
+function radiere(x, y) {
+  const r = 9; const vorher = striche.length;
+  striche = striche.filter(s => {
+    const o = ankerOben(s);
+    if (s.typ === "text") { const g = absGrenzen(s); return !(x >= g.x0 - r && x <= g.x1 + r && y >= g.y0 - r && y <= g.y1 + r); }
+    const pts = s.pts.map(([px, py]) => [px, py + o]);
+    if (s.typ === "rahmen") { const [a, b] = [pts[0], pts[pts.length - 1]]; const cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2, rx = Math.abs(b[0] - a[0]) / 2 || 1, ry = Math.abs(b[1] - a[1]) / 2 || 1; const d = Math.hypot((x - cx) / rx, (y - cy) / ry); return Math.abs(d - 1) * Math.min(rx, ry) > r; }
+    const nah = (p, q) => { const dx = q[0] - p[0], dy = q[1] - p[1], l = dx * dx + dy * dy; let t = l ? ((x - p[0]) * dx + (y - p[1]) * dy) / l : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(x - (p[0] + t * dx), y - (p[1] + t * dy)); };
+    const w = (s.typ === "marker" ? s.dicke * 2 : s.dicke / 2) + r;
+    if (pts.length === 1) return Math.hypot(x - pts[0][0], y - pts[0][1]) > w;
+    for (let i = 0; i < pts.length - 1; i++) if (nah(pts[i], pts[i + 1]) < w) return false;
+    return true;
+  });
+  if (striche.length !== vorher) { if (aktiv) aktiv.geloescht = true; zeichneAlles(); }
+}
+svg.addEventListener("pointerdown", e => { if (e.button !== 0 || werkzeug === "tippen") return; e.preventDefault(); svg.setPointerCapture(e.pointerId); strichStart(e); });
+svg.addEventListener("pointermove", strichWeiter);
+svg.addEventListener("pointerup", strichEnde); svg.addEventListener("pointercancel", strichEnde);
+// Mit einem echten Grafik-Stift kann man auch im Tipp-Modus direkt schreiben
+blatt.addEventListener("pointerdown", e => {
+  if (e.pointerType !== "pen" || werkzeug !== "tippen" || e.button !== 0) return;
+  e.preventDefault(); blatt.setPointerCapture(e.pointerId); strichStart(e);
+  const weiter = ev => strichWeiter(ev), ende = () => { strichEnde(); blatt.removeEventListener("pointermove", weiter); blatt.removeEventListener("pointerup", ende); };
+  blatt.addEventListener("pointermove", weiter); blatt.addEventListener("pointerup", ende);
+}, true);
+
+/* Text aufs Blatt (für Mindmaps) */
+const eingabe = $("#tinte-eingabe"); let eingabeInfo = null;
+function textEingabeStart(x, y) {
+  textEingabeFertig();
+  // vorhandenen Text anklicken → bearbeiten
+  const treffer = striche.find(s => { if (s.typ !== "text") return false; const g = absGrenzen(s); return x >= g.x0 - 4 && x <= g.x1 + 4 && y >= g.y0 - 4 && y <= g.y1 + 4; });
+  const groesse = treffer ? treffer.groesse : Math.round(13 + stiftDicke * 2);
+  eingabeInfo = treffer ? { alt: treffer } : { x, y: y - groesse * .7 };
+  const g = treffer ? absGrenzen(treffer) : null;
+  Object.assign(eingabe.style, { display: "block", left: (treffer ? treffer.x : x) - 4 + "px", top: (treffer ? g.y0 : y - groesse * .7) - 2 + "px", fontSize: groesse + "px", color: treffer ? treffer.farbe : stiftFarbe, lineHeight: 1.25 });
+  eingabe.innerText = treffer ? treffer.text : "";
+  setTimeout(() => { eingabe.focus(); const r = document.createRange(); r.selectNodeContents(eingabe); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r); }, 0);
+}
+function textEingabeFertig() {
+  if (eingabe.style.display !== "block" || !eingabeInfo) return;
+  const t = eingabe.innerText.replace(/\n+$/, ""); const info = eingabeInfo; eingabeInfo = null; eingabe.style.display = "none";
+  merken("zeichnen");
+  if (info.alt) { if (t.trim()) info.alt.text = t; else striche = striche.filter(s => s !== info.alt); layout(); geaendert(); return; }
+  if (!t.trim()) { verlauf.zurueck.pop(); return; }
+  ordnen();
+  const groesse = parseFloat(eingabe.style.fontSize), b = blockAnHoehe(info.y) || editor.firstElementChild, o = oben(b);
+  const s = { id: neueId(), typ: "text", farbe: eingabe.style.color || stiftFarbe, groesse, anker: b.dataset.b, letzteOben: o, x: info.x, dy: info.y - o, text: t };
+  striche.push(s); platzSichern(s); layout(); geaendert();
+}
+eingabe.addEventListener("keydown", e => { if (e.key === "Escape") { eingabe.innerText = ""; textEingabeFertig(); } if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); textEingabeFertig(); } });
+eingabe.addEventListener("blur", () => setTimeout(textEingabeFertig, 0));
+
+/* Layout-Änderungen beobachten */
+editor.addEventListener("input", e => {
+  // Nach Enter in einer Überschrift geht es (wie in Word) mit „Standard“ weiter
+  if (e.inputType === "insertParagraph") {
+    const s = getSelection(); const n = s.anchorNode && (s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentNode);
+    const h = n && n.closest("h1,h2,h3");
+    if (h && editor.contains(h) && !h.textContent.length && h.previousElementSibling && /^H[1-3]$/.test(h.previousElementSibling.nodeName)) {
+      const p = umbenennen(h, "p"); p.innerHTML = "<br>"; const r = document.createRange(); r.setStart(p, 0); r.collapse(true); s.removeAllRanges(); s.addRange(r);
+    }
+  }
+  neuOrdnen(); geaendert();
+});
+new ResizeObserver(() => neuOrdnen()).observe(editor);
+editor.addEventListener("load", e => { if (e.target.tagName === "IMG") neuOrdnen(); }, true);
+
+/* =====================================================================
+   Automatisch speichern
+   ===================================================================== */
+let speicherTimer = null;
+const entwurfDaten = () => JSON.stringify({ fach: $("#fach").value, thema: $("#thema").value, datum: $("#datum").value, html: editor.innerHTML, striche, zeit: Date.now(), version: 2 });
+function geaendert() { $("#status").textContent = "… speichert"; clearTimeout(speicherTimer); speicherTimer = setTimeout(speichern, 600); }
+async function speichern() { clearTimeout(speicherTimer); speicherTimer = null; try { await API.entwurfSpeichern(entwurfDaten()); $("#status").textContent = "✓ gespeichert"; } catch { $("#status").textContent = "⚠ Speichern fehlgeschlagen"; } }
+["#thema", "#datum"].forEach(s => $(s).addEventListener("input", geaendert));
+$("#fach").addEventListener("change", () => { setzeFarbe(); geaendert(); });
+window.addEventListener("beforeunload", () => { if (speicherTimer) API.entwurfSofortSpeichern(entwurfDaten()); });
+
+/* =====================================================================
+   Export: „Stunde beenden → Claude“
+   ===================================================================== */
+function dateiname(fach, datum, thema) {
+  const sauber = s => s.normalize("NFC").replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-").slice(0, 60);
+  return `Mitschrift_${sauber(fach)}_${datum}${thema ? "_" + sauber(thema) : ""}.html`;
+}
+/* Zeichnungen zu Gruppen zusammenfassen (z. B. eine Mindmap = ein Ausschnitt) */
+function gruppen() {
+  const items = striche.map(s => ({ s, g: absGrenzen(s) }));
+  const LUECKE = 36, teile = items.map((_, i) => i);
+  const wurzel = i => teile[i] === i ? i : (teile[i] = wurzel(teile[i]));
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+    const a = items[i].g, b = items[j].g;
+    if (a.x0 - LUECKE < b.x1 && b.x0 - LUECKE < a.x1 && a.y0 - LUECKE < b.y1 && b.y0 - LUECKE < a.y1) teile[wurzel(i)] = wurzel(j);
+  }
+  const m = new Map();
+  items.forEach((it, i) => { const w = wurzel(i); if (!m.has(w)) m.set(w, { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity, s: [] }); const g = m.get(w); g.x0 = Math.min(g.x0, it.g.x0); g.x1 = Math.max(g.x1, it.g.x1); g.y0 = Math.min(g.y0, it.g.y0); g.y1 = Math.max(g.y1, it.g.y1); g.s.push(it.s); });
+  return [...m.values()].sort((a, b) => a.y0 - b.y0);
+}
+function seitenHTML() {
+  const stil = [...document.querySelectorAll("style")].filter(s => s.id !== "nur-editor").map(s => s.textContent).join("\n");
+  const tinte = striche.map(s => form(s, ankerOben(s)).outerHTML).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${stil}
+  html,body{background:#fff;overflow:hidden;display:block}.blatt{margin:0;box-shadow:none;border-radius:0}</style></head>
+  <body style="--akzent:${getComputedStyle(document.documentElement).getPropertyValue("--akzent")};--akzent-hell:${getComputedStyle(document.documentElement).getPropertyValue("--akzent-hell")}">
+  <div class="blatt" style="min-height:${blatt.offsetHeight}px"><div id="editor">${editor.innerHTML}</div><svg id="tinte" xmlns="${SVGNS}">${tinte}</svg></div></body></html>`;
+}
+async function exportHTML() {
+  await fremdeBilderEinbetten();
+  layout();
+  const fach = $("#fach").value, thema = $("#thema").value.trim(), datum = $("#datum").value || heute();
+  const grp = gruppen();
+  let bilder = [];
+  if (grp.length) {
+    const bereiche = grp.map(g => { const x = Math.max(0, g.x0 - 30), y = Math.max(0, g.y0 - 24); return { x, y, w: Math.min(blatt.offsetWidth, g.x1 + 30) - x, h: Math.min(2400, g.y1 + 24 - y) }; });
+    // Text, den die Zeichnung berührt, für Claude als Zusammenhang mitgeben
+    try { bilder = (await API.ausschnitte({ html: seitenHTML(), breite: blatt.offsetWidth, hoehe: blatt.offsetHeight, bereiche })) || []; } catch (e) { console.error(e); bilder = []; }
+  }
+  const kopie = editor.cloneNode(true);
+  grp.forEach((g, i) => {
+    // nach dem letzten Absatz einfügen, den die Zeichnung berührt
+    const betroffen = [...editor.children].filter(b => !istPlatz(b) && unten(b) > g.y0 && oben(b) < g.y1);
+    const nachBlock = betroffen.length ? betroffen[betroffen.length - 1] : blockAnHoehe(g.y0);
+    const bezug = betroffen.map(b => b.innerText.trim().replace(/\s*[\r\n]+\s*/g, " / ")).filter(Boolean).join(" | ").slice(0, 200);
+    const img = document.createElement("img");
+    if (bilder[i]) img.src = bilder[i];
+    img.setAttribute("data-art", "handschrift");
+    img.setAttribute("data-bezug", bezug);
+    img.setAttribute("data-breite", Math.round((g.x1 - g.x0 + 60) / (blatt.offsetWidth - 144) * 100) + "%");
+    const texte = g.s.filter(s => s.typ === "text").map(s => s.text.replace(/\n/g, " ")).join(" · ");
+    if (texte) img.setAttribute("data-texte", texte);
+    const ziel = nachBlock && kopie.querySelector(`:scope > [data-b="${nachBlock.dataset.b}"]`);
+    const p = document.createElement("p"); p.className = "bildabsatz"; p.appendChild(img);
+    if (ziel) { let z = ziel; while (z.nextElementSibling && istPlatz(z.nextElementSibling)) z = z.nextElementSibling; z.after(p); } else kopie.appendChild(p);
+  });
+  kopie.querySelectorAll(".zeichenplatz").forEach(z => z.remove());
+  kopie.querySelectorAll("[data-b]").forEach(z => z.removeAttribute("data-b"));
+  kopie.querySelectorAll("img").forEach(i => {
+    if (i.dataset.art === "handschrift") return;
+    const breite = i.style.width || ""; const quelle = i.dataset.quelle || "";
+    [...i.attributes].forEach(a => { if (a.name !== "src") i.removeAttribute(a.name); });
+    i.setAttribute("data-art", "bild"); if (breite) i.setAttribute("data-breite", breite); if (quelle) i.setAttribute("data-quelle", quelle);
+  });
+  kopie.querySelectorAll("p").forEach(p => { if (!p.textContent.trim() && !p.querySelector("img")) p.remove(); });
+  const ohneBild = grp.length && !bilder.some(Boolean);
+  return { fach, thema, datum, ohneBild, html: `<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Mitschrift ${esc(fach)} – ${esc(thema || "ohne Thema")} – ${esc(datum)}</title>
+<meta name="mitschrift-fach" content="${esc(fach)}">
+<meta name="mitschrift-thema" content="${esc(thema)}">
+<meta name="mitschrift-datum" content="${esc(datum)}">
+<meta name="mitschrift-erstellt" content="${new Date().toISOString()}">
+<meta name="mitschrift-version" content="2">
+<style>body{font-family:Calibri,Arial,sans-serif;max-width:820px;margin:30px auto;line-height:1.55;padding:0 16px}img{max-width:100%}
+blockquote{margin:10px 0;padding:8px 12px}blockquote.merke{background:#FFF6D6;border-left:5px solid #E8B931}blockquote.beispiel{background:#F1F3F5;border-left:5px solid #9AA3AE}blockquote.zitat{border-left:4px solid #ccc;font-style:italic}
+table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:5px 8px}ul.striche{list-style-type:"–  "}ol.buchstaben{list-style-type:lower-alpha}ol.roemisch{list-style-type:upper-roman}
+img[data-art=handschrift]{border:1px dashed #ccc}.bildabsatz{text-align:center}.bildquelle{font-size:12px;color:#666;text-align:center}</style>
+</head><body>
+<h1 class="kopfzeile">${esc(fach)}: ${esc(thema || "Mitschrift")} <small>(${esc(datum)})</small></h1>
+<main id="notizen">
+${kopie.innerHTML}
+</main>
+</body></html>` };
+}
+async function exportieren(themaGefragt = false) {
+  bildMenueZu(); werkzeugWaehlen("tippen");
+  if (!editor.textContent.trim() && !editor.querySelector("img,table") && !striche.length) { meldung("Du hast noch nichts geschrieben."); return; }
+  if (!$("#thema").value.trim() && !themaGefragt) { dialog("#thema-hg"); setTimeout(() => $("#thema-frage").focus(), 30); return; }
+  if (!$("#datum").value) $("#datum").value = heute();
+  $("#fertig").disabled = true; $("#status").textContent = "… wird übergeben";
+  try {
+    const e = await exportHTML();
+    await speichern();
+    const r = await API.exportSpeichern(dateiname(e.fach, e.datum, e.thema), e.html);
+    if (!r || !r.ok) { meldung("Nicht gespeichert – bitte einen Ordner wählen."); return; }
+    $("#fertig-text").textContent = `„${r.pfad.split(/[\\/]/).pop()}“ liegt jetzt im Ordner „${(r.ordner || "").split(/[\\/]/).slice(-2).join(" › ")}“.` + (e.ohneBild ? " (Zeichnungen konnten nicht als Bild übergeben werden.)" : "");
+    dialog("#fertig-hg"); $("#status").textContent = "✓ an Claude übergeben";
+  } catch (err) { console.error(err); meldung("Fehler beim Speichern: " + err.message, 6000); }
+  finally { $("#fertig").disabled = false; }
+}
+$("#fertig").onclick = () => exportieren(false);
+$("#thema-ok").onclick = () => { $("#thema").value = $("#thema-frage").value.trim(); dialog("#thema-hg", false); geaendert(); exportieren(true); };
+$("#thema-ueberspringen").onclick = () => { dialog("#thema-hg", false); exportieren(true); };
+$("#thema-frage").addEventListener("keydown", e => { if (e.key === "Enter") $("#thema-ok").click(); });
+$("#kopieren").onclick = async () => { await API.textKopieren("/mitschrift"); meldung("„/mitschrift“ kopiert – in Claude mit Strg+V einfügen."); };
+$("#weiterschreiben").onclick = () => dialog("#fertig-hg", false);
+$("#ordner-zeigen").onclick = () => API.eingangOeffnen();
+
+async function neueStunde() {
+  await API.letzteSpeichern({ fach: $("#fach").value, thema: $("#thema").value, datum: $("#datum").value, html: editor.innerHTML, striche });
+  editor.innerHTML = "<p><br></p>"; striche = []; verlauf.zurueck = []; verlauf.vor = [];
+  $("#thema").value = ""; $("#datum").value = heute(); layout(); await speichern();
+  dialog("#fertig-hg", false); dialog("#mehr-hg", false); cursorAnsEnde();
+}
+$("#neue-stunde").onclick = neueStunde;
+$("#mehr").onclick = async () => { const e = await API.einstellungen(); $("#m-info").textContent = API.desktop ? `Speicherort für Claude: ${e.eingang || "noch nicht gewählt"}` : "Browser-Version: Bitte die Desktop-App verwenden, damit Zeichnungen mitgeschickt werden."; dialog("#mehr-hg"); };
+$("#m-neu").onclick = () => { if ((editor.textContent.trim() || striche.length) && !confirm("Neue leere Stunde beginnen?\n(Die jetzige kannst du über „Letzte Stunde wiederherstellen“ zurückholen.)")) return; neueStunde(); };
+$("#m-letzte").onclick = async () => {
+  const l = await API.letzteLaden(); if (!l) { meldung("Keine frühere Stunde gespeichert."); return; }
+  merken(); const jetzt = { fach: $("#fach").value, thema: $("#thema").value, datum: $("#datum").value, html: editor.innerHTML, striche };
+  fuelleFaecher(l.fach); $("#thema").value = l.thema || ""; $("#datum").value = l.datum || heute(); editor.innerHTML = l.html || "<p><br></p>"; striche = l.striche || [];
+  await API.letzteSpeichern(jetzt); layout(); await speichern(); dialog("#mehr-hg", false); meldung("Wiederhergestellt ✓");
+};
+$("#m-ordner").onclick = async () => { const o = await API.eingangWaehlen(); if (o) { meldung("Speicherort: " + o); dialog("#mehr-hg", false); } };
+$("#m-fach").onclick = async () => {
+  const n = (prompt("Name des Fachs (genau wie der Ordner, z. B. „Geschichte“):") || "").trim(); if (!n) return;
+  if (!alleFaecher().some(f => f[0] === n)) { eigeneFaecher.push([n, "#455A64"]); await API.einstellungSetzen("eigeneFaecher", eigeneFaecher); }
+  fuelleFaecher(n); geaendert(); dialog("#mehr-hg", false);
+};
+
+/* =====================================================================
+   Start
+   ===================================================================== */
+function cursorAnsEnde() { editor.focus({ preventScroll: true }); const r = document.createRange(); r.selectNodeContents(editor.lastElementChild || editor); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r); }
+(async () => {
+  document.execCommand("defaultParagraphSeparator", false, "p");
+  const e = await API.einstellungen(); eigeneFaecher = e.eigeneFaecher || [];
+  let d = await API.entwurfLaden(); if (typeof d === "string") { try { d = JSON.parse(d); } catch { d = null; } }
+  if (d) {
+    fuelleFaecher(d.fach); $("#thema").value = d.thema || ""; $("#datum").value = d.datum || heute();
+    editor.innerHTML = d.html || "<p><br></p>"; striche = d.striche || [];
+    // alte Version (Überschriften waren h2/h3) behutsam übernehmen
+    if (!d.version) editor.querySelectorAll(":scope > h2, :scope > h3").forEach(h => umbenennen(h, h.nodeName === "H2" ? "h1" : "h2"));
+    $("#status").textContent = "✓ gespeichert";
+  } else { fuelleFaecher("EBC"); $("#datum").value = heute(); editor.innerHTML = "<p><br></p>"; $("#status").textContent = "bereit"; }
+  layout(); cursorAnsEnde();
+  if (!API.desktop) meldung("Tipp: In der Desktop-App funktioniert alles am besten.", 4000);
+})();
+</script>
+</body>
+</html>

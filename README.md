@@ -1,65 +1,82 @@
-# ✎ Unterrichts-Notizblock → Claude → Word
+# ✎ Notizblock → Claude → Word
 
-Im Unterricht schnell mitschreiben und zeichnen – am Ende der Stunde **ein Klick**, und Claude
-macht daraus eine schön gestaltete, übersichtliche Word-Lernunterlage. Jedes Fach bekommt
-sein eigenes Design mit eigener Farbe, und alle Stunden eines Fachs landen in **einem**
-Word-Dokument.
+Eine Desktop-App für den Unterricht: tippen wie in Word, **mit der Maus direkt aufs Blatt
+zeichnen** (z. B. eine Mindmap um ein getipptes Wort), Bilder einfügen – und am Ende der Stunde
+**ein Klick**: Claude macht daraus eine schön gestaltete Word-Lernunterlage. Jedes Fach hat sein
+eigenes Design, alle Stunden eines Fachs landen in **einem** Word-Dokument.
 
 ```
-Notizblock (Browser)  ──„Stunde beenden → Claude“──▶  _Eingang/Mitschrift_….html
-                                                              │
-                                     in Claude: /mitschrift   ▼
-                                  Fach/Mitschrift.docx  ◀── Skill „mitschrift“
+Notizblock (Desktop-App) ──„Stunde beenden → Claude“──▶ Schule/<Schuljahr>/_Eingang/Mitschrift_….html
+                                                                  │
+                                         in Claude: /mitschrift   ▼
+                                       <Fach>/Mitschrift.docx ◀── Skill „mitschrift“
 ```
+
+## Herunterladen und installieren
+
+1. Rechts unter **„Releases“** die neueste Version öffnen.
+2. **`Notizblock-Setup-….exe`** herunterladen und doppelklicken.
+   (Windows fragt eventuell „Unbekannter Herausgeber“ → „Weitere Informationen“ → „Trotzdem ausführen“.)
+3. Fertig – auf dem Desktop liegt jetzt **Notizblock**.
+
+Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShell ausführen“
+(braucht [Node.js](https://nodejs.org)).
 
 ## Was kann der Notizblock?
 
-- Schreiben wie in Word: Überschriften, **fett**, *kursiv*, Farben, Textmarker, Aufzählungen,
-  Tabellen und „💡 Merke“-Kästen
-- **Mit der Maus zeichnen**: Stift, Textmarker, Radierer, Linie, Pfeil, Rechteck, Kreis, Text –
-  auf weißem, kariertem oder liniertem Papier
-- Bilder einfügen: Knopf „Bild“, **Strg+V** (z. B. Screenshots) oder einfach hineinziehen –
-  und auf Bildern herummalen („✎ Bemalen“)
-- Speichert automatisch im Browser – nichts geht verloren, auch wenn das Fenster zugeht
-- Fach, Thema und Datum oben auswählen
+**Schreiben wie in Word**
+- Formatvorlagen: *Standard*, *Überschrift 1–3*, *Merke*, *Beispiel*, *Zitat*
+  (Strg+Alt+1/2/3, Strg+Umschalt+N)
+- Aufzählungen mit **Punkten** oder **Strichen**, Nummerierungen **1. 2. 3.**, **a) b) c)**,
+  **I. II. III.** – mit Unterebenen (Tab / Umschalt+Tab)
+- Wie in Word: „- “ oder „1. “ am Zeilenanfang startet automatisch eine Liste,
+  zweimal Enter beendet sie
+- Fett, kursiv, unterstrichen, Textfarben, Textmarker, Tabellen (Tab springt zur nächsten Zelle)
+- Rechtschreibprüfung mit Vorschlägen per Rechtsklick
+
+**Zeichnen direkt auf dem Blatt** – ohne extra Fenster
+- Stift, Textmarker, Pfeil, Linie, Kreis/Rahmen, Radierer, Farben, Strichstärken
+- **T**: Text irgendwo aufs Blatt schreiben – ideal für Mindmaps mit der Maus
+- Zeichnungen „kleben“ an ihrem Absatz und wandern mit, wenn darüber Text dazukommt;
+  zeichnest du unter den Text, rutscht weiterer Text automatisch darunter
+- **Esc** = zurück zum Tippen · mit einem Grafik-Stift kann man jederzeit direkt schreiben
+
+**Bilder**
+- vom Computer, mit **Strg+V** (Screenshots) oder hineinziehen
+- **Onlinebild**: freie Bilder suchen (Wikimedia Commons, mit Quellenangabe) oder eine
+  Bild-Adresse aus dem Internet einfügen; Bilder aus dem Browser kann man auch einfach hineinziehen
+
+**Sicher**: speichert laufend automatisch – nichts geht verloren, auch nicht beim Schließen.
 
 ## So benutzt du es
 
-1. **Notizblock öffnen** – `index.html` doppelklicken (am besten in Edge oder Chrome)
-   oder die Online-Version über GitHub Pages verwenden.
-2. **Mitschreiben**, zeichnen, Bilder einfügen.
-3. Am Ende: **„Stunde beenden → Claude“** klicken.
-   Beim ersten Mal einmalig den Ordner `Schule › 2026_27 › _Eingang` auswählen.
-4. In der **Claude-App** (Ordner `Schule/2026_27`) eintippen: **`/mitschrift`**
-   → Claude hängt die Stunde gestaltet an das Word-Dokument des Fachs an.
+1. **Notizblock** auf dem Desktop öffnen, Fach + Thema wählen, mitschreiben und zeichnen.
+2. Am Ende: **„Stunde beenden → Claude“**. Die Stunde landet automatisch in
+   `OneDrive › Schule › <neuestes Schuljahr> › _Eingang` (änderbar unter „⋯ Mehr“).
+3. In der **Claude-App** (Ordner `Schule/<Schuljahr>`) eintippen: **`/mitschrift`**.
 
-Tipp: Wenn du nach dem Export weiterschreibst und nochmal exportierst, ersetzt Claude die
-Stunde einfach – es entsteht nichts doppelt.
+Claude bekommt den Text **und** Ausschnitte deiner Zeichnungen samt dem Text darunter – so
+versteht es z. B. eine Mindmap und baut sie sinnvoll ins Word-Dokument ein.
 
 ## Einrichtung des Claude-Skills (einmalig)
 
-Der Ordner [`skill/mitschrift`](skill/mitschrift) enthält den Skill, der festlegt, wie die
-Word-Dokumente aussehen. Installieren: Rechtsklick auf
-[`skill/installieren.ps1`](skill/installieren.ps1) → **„Mit PowerShell ausführen“**.
-Voraussetzung: Python und Node.js sind installiert.
+Rechtsklick auf [`skill/installieren.ps1`](skill/installieren.ps1) → **„Mit PowerShell ausführen“**.
+Voraussetzung: Python und Node.js.
 
 ## Design anpassen
 
 - **Farben pro Fach:** [`skill/mitschrift/faecher.json`](skill/mitschrift/faecher.json)
-- **Regeln, wie Claude gestaltet** (Merke-Kästen, Zusammenfassung, Tabellen …):
-  Abschnitt „Gestaltungsregeln“ in [`skill/mitschrift/SKILL.md`](skill/mitschrift/SKILL.md)
-- Oder einfach Claude sagen: *„Mach Mathe lila“* oder *„Lass die Zusammenfassung weg“*.
+- **Gestaltungsregeln** (Merke-Kästen, Zusammenfassung, Umgang mit Zeichnungen …):
+  [`skill/mitschrift/SKILL.md`](skill/mitschrift/SKILL.md)
+- Oder einfach Claude sagen: *„Mach Mathe lila“*. Danach `skill/installieren.ps1` nochmal ausführen.
 
-Nach Änderungen im Ordner `skill` nochmal `installieren.ps1` ausführen.
+## Aufbau
 
-## Wo liegt was?
-
-| Datei / Ordner | Inhalt |
+| Ordner / Datei | Inhalt |
 |---|---|
-| `index.html` | der Notizblock (eine einzige Datei, läuft offline im Browser) |
-| `skill/mitschrift/SKILL.md` | Anleitung + Gestaltungsregeln für Claude |
-| `skill/mitschrift/scripts/` | Hilfsprogramme: Export lesen, Word bauen, Vorschau |
-| `skill/mitschrift/beispiel/` | Beispiel-Export und Beispiel-Inhalt |
-
-Im Schulordner legt der Skill pro Fach einen Ordner `_Mitschrift-Daten` an (Inhalt aller
-Stunden, Bilder, automatische Sicherungen der Word-Datei). Den bitte nicht löschen.
+| `app/index.html` | der Editor (läuft notfalls auch im Browser, dann ohne Zeichnungs-Übergabe) |
+| `desktop/` | Desktop-App (Electron): Fenster, Speichern, Export, Bilder aus dem Internet |
+| `build/` | App-Symbol |
+| `bauen.ps1` | baut die App und installiert sie |
+| `skill/mitschrift/` | Claude-Skill: Anleitung, Gestaltungsregeln, Skripte, Beispiel |
+| `.github/workflows/installer.yml` | baut bei neuer Version automatisch den Installer für „Releases“ |

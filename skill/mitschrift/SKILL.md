@@ -5,7 +5,7 @@ description: Verarbeitet Unterrichtsnotizen aus dem Notizblock (Dateien „Mitsc
 
 # Mitschrift → gestaltetes Word-Dokument
 
-Die Schülerin schreibt im Unterricht im **Notizblock** (eine Webseite) und drückt am Ende
+Die Schülerin schreibt im Unterricht im **Notizblock** (Desktop-App) und drückt am Ende
 „Stunde beenden → Claude“. Dadurch landet eine Datei `Mitschrift_<Fach>_<Datum>_<Thema>.html`
 im Ordner `_Eingang` (oder in `Downloads`). Deine Aufgabe: daraus eine übersichtliche,
 verständliche Lernunterlage machen und sie an das Word-Dokument des Fachs anhängen.
@@ -54,8 +54,17 @@ Liefert alle offenen Exporte (aus `_Eingang`-Ordnern und `Downloads/Mitschrift_*
 python "SKILL/scripts/export_lesen.py" auspacken "<export.html>" "<Fach>/_Mitschrift-Daten/eingang-tmp"
 ```
 - `inhalt.md` vollständig lesen (Legende der Markierungen steht oben in der Datei).
+  Überschriften: `##` = Überschrift 1, `###` = Überschrift 2, `####` = Überschrift 3 –
+  das ist ihre eigene Gliederung, daran orientieren.
 - **Jedes Bild und jede Zeichnung mit dem Read-Tool ansehen.** Zeichnungen enthalten oft
   wichtigen Inhalt (Skizzen, Diagramme, Pfeile, Rechnungen).
+- **`[HANDSCHRIFT n: …]`** = sie hat direkt aufs Blatt gezeichnet oder geschrieben (Mindmap um
+  ein Wort, Pfeile zwischen Begriffen, Kreise, Randnotizen). Der Ausschnitt zeigt die Zeichnung
+  **zusammen mit dem getippten Text darunter**; „berührt den Text“ sagt, zu welchen Absätzen sie
+  gehört, „aufs Blatt geschriebene Wörter“ sind getippte Beschriftungen. Bedeutung erschließen und
+  einbauen (siehe Gestaltungsregel 7).
+- `(Bildquelle) …` bzw. „Quelle:“ bei einem Bild aus dem Internet → als Bildunterschrift übernehmen
+  (Lizenzangabe gehört dazu).
 - Bilder, die ins Dokument sollen, nach `<Fach>/_Mitschrift-Daten/bilder/` kopieren mit
   sprechendem Namen: `<datum>_<kurzname>.png` (z. B. `2026-11-16_client-server.png`).
 - Danach `eingang-tmp` löschen.
@@ -133,7 +142,9 @@ verfügbar ist, diesen Schritt auslassen.)
    (z. B. ein Alltagsbeispiel). Keinen neuen Prüfungsstoff erfinden. Ist etwas in den Notizen
    unklar, nicht raten, sondern im Text mit „(?)“ markieren und in der Rückmeldung erwähnen.
 5. Was sie **markiert, farbig, unterstrichen, mit „!!“ oder im Merke-Kasten** geschrieben hat,
-   ist wichtig → in einen `merke`-Kasten oder ==hervorheben==.
+   ist wichtig → in einen `merke`-Kasten oder ==hervorheben==. Ihr `[BEISPIEL-KASTEN]` → `beispiel`,
+   `[ZITAT]` → `merke` mit Titel „Definition“ (oder kursiver `text`). Ihre Listenart (1. / a) / I. /
+   – / •) beibehalten: Nummerierungen bleiben `nummern`.
 6. Sprache: Deutsch. Im Fach Englisch bleibt der Inhalt auf Englisch (Erklärungen dürfen kurz
    auf Deutsch dazu).
 
@@ -146,8 +157,14 @@ verfügbar ist, diesen Schritt auslassen.)
    „kommt zum Test“ → `achtung`. Formeln → `formel` (mit Erklärung der Variablen).
 6. Zeichnungen und Bilder → `bild` mit Bildunterschrift an der passenden Stelle. Steckt in einer
    Skizze Inhalt (z. B. ein Ablauf), diesen zusätzlich kurz in Worten oder als Tabelle erklären.
-7. Ab 3 neuen Fachbegriffen am Ende: `begriffe` („Wichtige Begriffe“).
-8. Zum Schluss immer: `zusammenfassung` mit 3–5 Punkten.
+7. **Handschrift (`[HANDSCHRIFT …]`):** Den Inhalt immer in den Text übernehmen – eine Mindmap
+   um „Internet“ mit „WWW“, „E-Mail“, „FTP“ wird z. B. eine Liste „Dienste des Internets“ (mit
+   Unterpunkten) oder eine Tabelle; Pfeile werden zu „→“-Beziehungen; eingekreiste/unterstrichene
+   Wörter sind wichtig (→ hervorheben). Ist es eine echte Skizze/Mindmap, zusätzlich den Ausschnitt
+   als `bild` einfügen (Unterschrift z. B. „Mindmap aus dem Unterricht“). Nur Unterstreichungen,
+   Kreise oder Häkchen → kein Bild nötig, nur hervorheben.
+8. Ab 3 neuen Fachbegriffen am Ende: `begriffe` („Wichtige Begriffe“).
+9. Zum Schluss immer: `zusammenfassung` mit 3–5 Punkten.
 
 **Aussehen** (macht das Skript automatisch – nicht von Hand nachbauen)
 - Jedes Fach hat eine eigene Farbe (`SKILL/faecher.json`): Überschriften, Kästen,

@@ -1,5 +1,6 @@
 node_modules/
 package-lock.json
+dist/
 *.docx
 _Mitschrift-Daten/
 .DS_Store

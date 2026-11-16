@@ -1,0 +1,38 @@
+{
+  "name": "schoolnotes-optimizer",
+  "productName": "Notizblock",
+  "version": "2.0.0",
+  "description": "Unterrichts-Notizblock: schreiben, direkt im Text zeichnen, Bilder einfügen – und per Klick an Claude übergeben",
+  "main": "desktop/main.js",
+  "author": "GoldmanNadin",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "bauen": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "45.3.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.goldmannadin.notizblock",
+    "productName": "Notizblock",
+    "copyright": "GoldmanNadin",
+    "files": ["desktop/**", "app/**", "package.json"],
+    "directories": { "output": "dist", "buildResources": "build" },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Notizblock",
+      "runAfterFinish": true,
+      "artifactName": "Notizblock-Setup-${version}.exe"
+    }
+  }
+}
