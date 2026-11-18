@@ -1,7 +1,10 @@
 name: Installer bauen
 
 # Baut die Windows-App, sobald eine neue Version (z. B. v2.0.0) markiert wird,
-# und legt „Notizblock-Setup-….exe“ unter „Releases“ zum Herunterladen ab.
+# und legt unter „Releases“ zum Herunterladen ab:
+#   - Notizblock-Setup-….exe   (die App)
+#   - Skill-mitschrift.zip     (Claude-Skill: Notizblock-Stunde → Word)
+#   - Skill-schulskript.zip    (Claude-Skill: Foto/Text → gestaltetes Skript)
 on:
   push:
     tags: ["v*"]
@@ -20,9 +23,26 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx electron-builder --win nsis --x64 --publish never
+      - name: Skills als ZIP packen
+        shell: bash
+        run: |
+          cd skill
+          7z a -tzip ../dist/Skill-mitschrift.zip mitschrift -xr!node_modules -xr!package-lock.json
+          7z a -tzip ../dist/Skill-schulskript.zip schulskript
       - name: Release anlegen
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/Notizblock-Setup-*.exe --title "Notizblock $GITHUB_REF_NAME" --notes "Zum Installieren die Datei Notizblock-Setup-….exe herunterladen und doppelklicken."
+        run: |
+          cat > notizen.md <<'EOF'
+          **App installieren:** `Notizblock-Setup-….exe` herunterladen und doppelklicken (Windows fragt evtl. „Unbekannter Herausgeber“ → „Weitere Informationen“ → „Trotzdem ausführen“).
+
+          **Claude-Skills:**
+          - `Skill-mitschrift.zip` – macht aus einer Notizblock-Stunde ein Word-Dokument
+          - `Skill-schulskript.zip` – macht aus Foto, Text oder Stichworten ein gestaltetes Skript
+
+          In claude.ai: *Einstellungen → Fähigkeiten → Skill hochladen* und die ZIP-Datei wählen.
+          In Claude Code: ZIP entpacken und den Ordner nach `~/.claude/skills/` kopieren.
+          EOF
+          gh release create "$GITHUB_REF_NAME" dist/Notizblock-Setup-*.exe dist/Skill-*.zip --title "Notizblock $GITHUB_REF_NAME" --notes-file notizen.md

@@ -19,6 +19,13 @@ Notizblock (Desktop-App) ──„Stunde beenden → Claude“──▶ Schule/<
    (Windows fragt eventuell „Unbekannter Herausgeber“ → „Weitere Informationen“ → „Trotzdem ausführen“.)
 3. Fertig – auf dem Desktop liegt jetzt **Notizblock**.
 
+Die **Claude-Skills** liegen dort ebenfalls als eigene Dateien:
+- **`Skill-mitschrift.zip`** – macht aus einer Notizblock-Stunde ein Word-Dokument
+- **`Skill-schulskript.zip`** – macht aus Foto, Text oder Stichworten ein gestaltetes Skript
+
+In claude.ai unter *Einstellungen → Fähigkeiten* hochladen, oder in Claude Code entpacken und den
+Ordner nach `~/.claude/skills/` kopieren.
+
 Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShell ausführen“
 (braucht [Node.js](https://nodejs.org)).
 
