@@ -3,13 +3,13 @@
 Eine Desktop-App für den Unterricht: tippen wie in Word, **mit der Maus direkt aufs Blatt
 zeichnen** (z. B. eine Mindmap um ein getipptes Wort), Bilder einfügen – und am Ende der Stunde
 **ein Klick**: Claude macht daraus eine schön gestaltete Word-Lernunterlage. Jedes Fach hat sein
-eigenes Design, alle Stunden eines Fachs landen in **einem** Word-Dokument.
+eigenes Design; jede Stunde wird ein eigenes Word-Dokument im Fach-Ordner – nur dein Text, ohne Titelseite.
 
 ```
 Notizblock (Desktop-App) ──„Stunde beenden → Claude“──▶ Schule/<Schuljahr>/_Eingang/Mitschrift_….html
                                                                   │
                                          in Claude: /mitschrift   ▼
-                                       <Fach>/Mitschrift.docx ◀── Skill „mitschrift“
+                         <Fach>/2026-11-16 Das Internet.docx ◀── Skill „mitschrift“
 ```
 
 ## Herunterladen und installieren

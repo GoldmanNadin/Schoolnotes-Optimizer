@@ -1,6 +1,6 @@
 ---
 name: mitschrift
-description: Verarbeitet Unterrichtsnotizen aus dem Notizblock (Dateien „Mitschrift_*.html“ im gewählten Speicherort/_Eingang oder in Downloads) und hängt sie wortgetreu, aber schön gestaltet an das Word-Dokument des jeweiligen Fachs an – jedes Fach mit eigener Farbe, Zeichnungen sauber nachgezeichnet. Verwenden bei „/mitschrift“, „Mitschrift verarbeiten“, „Notizen in Word“, „neue Stunde eintragen“ oder wenn eine Mitschrift_*.html-Datei auftaucht. Auch zum Ändern des Designs der Mitschriften.
+description: Verarbeitet Unterrichtsnotizen aus dem Notizblock (Dateien „Mitschrift_*.html“ im gewählten Speicherort/_Eingang oder in Downloads) und macht aus jeder Stunde ein eigenes Word-Dokument im Fach-Ordner – wortgetreu, schön gestaltet in der Farbe des Fachs, Zeichnungen sauber nachgezeichnet, ohne Titelseite. Verwenden bei „/mitschrift“, „Mitschrift verarbeiten“, „Notizen in Word“, „neue Stunde eintragen“ oder wenn eine Mitschrift_*.html-Datei auftaucht. Auch zum Ändern des Designs der Mitschriften.
 ---
 
 # Mitschrift → gestaltetes Word-Dokument
@@ -8,8 +8,8 @@ description: Verarbeitet Unterrichtsnotizen aus dem Notizblock (Dateien „Mitsc
 Die Schülerin schreibt im Unterricht im **Notizblock** (Desktop-App) und drückt am Ende
 „Stunde beenden → Claude“. Dadurch landet eine Datei `Mitschrift_<Fach>_<Datum>_<Thema>.html`
 im Ordner `_Eingang` (oder in `Downloads`). Deine Aufgabe: daraus eine übersichtliche,
-gestaltete Mitschrift machen – **wortgetreu, ohne etwas dazuzuschreiben** – und sie an das
-Word-Dokument des Fachs anhängen.
+gestaltete Mitschrift machen – **wortgetreu, ohne etwas dazuzuschreiben** – als **eigenes
+Word-Dokument für genau diese Stunde** (keine Titelseite, kein Inhaltsverzeichnis, kein Kapitel-Balken).
 
 **Sprich mit ihr einfach, kurz und auf Deutsch.** Sie hat keinen technischen Hintergrund:
 keine Fachbegriffe wie JSON, Skript, Node; Fortschritt in ein bis zwei kurzen Sätzen.
@@ -19,21 +19,22 @@ keine Fachbegriffe wie JSON, Skript, Node; Fortschritt in ein bis zwei kurzen S�
 ## Wie die Daten liegen
 
 ```
-Schule/2026_27/                 ← Schuljahres-Ordner (enthält _Eingang)
-├─ _Eingang/                    ← neue Exporte aus dem Notizblock
-│  └─ erledigt/                 ← verarbeitete Exporte (nie löschen)
+Schule/2026_27/                        ← Schuljahres-Ordner (enthält _Eingang)
+├─ _Eingang/                           ← neue Exporte aus dem Notizblock
+│  └─ erledigt/                        ← verarbeitete Exporte (nie löschen)
 ├─ EBC/
-│  ├─ Mitschrift.docx           ← das Word-Dokument (wird jedes Mal komplett neu gebaut)
+│  ├─ 2026-11-16 Das Internet.docx     ← EIN Word-Dokument PRO STUNDE
+│  ├─ 2026-11-18 Netzwerke.docx
 │  └─ _Mitschrift-Daten/
-│     ├─ mitschrift.json        ← Inhalt ALLER Stunden (die „Quelle“ des Word-Dokuments)
-│     ├─ bilder/                ← Bilder und Zeichnungen
-│     └─ backup/                ← automatische Sicherungen der Word-Datei
+│     ├─ stunden/2026-11-16_Das-Internet.json   ← Inhalt dieser Stunde (Quelle der .docx)
+│     ├─ bilder/                       ← nachgezeichnete Skizzen, Bilder
+│     └─ backup/                       ← automatische Sicherungen, falls eine .docx neu gebaut wird
 └─ Mathe/ …
 ```
 
-Das Word-Dokument wird immer aus `mitschrift.json` erzeugt. Darum: **nie direkt in der
-.docx herumbasteln**, sondern immer `mitschrift.json` ändern und neu bauen. So sehen alle
-Stunden immer gleich aus, und Design-Änderungen gelten automatisch für alles.
+Jedes Word-Dokument wird aus seiner Stunden-Datei (`stunden/….json`) erzeugt. Darum: **nie direkt
+in der .docx herumbasteln**, sondern die Stunden-Datei ändern und neu bauen.
+Ältere Word-Dateien im Fach-Ordner (z. B. eine frühere `Mitschrift.docx`) **nicht anfassen**.
 
 ## Ablauf
 
@@ -72,40 +73,24 @@ python "SKILL/scripts/export_lesen.py" auspacken "<export.html>" "<Fach>/_Mitsch
   sprechendem Namen: `<datum>_<kurzname>.png` (z. B. `2026-11-16_client-server.png`).
 - Danach `eingang-tmp` löschen.
 
-### 4. Fach-Daten öffnen (oder beim ersten Mal anlegen)
-Fach-Ordner = `<Schuljahres-Ordner>/<fach aus dem Export>` (anlegen, falls er fehlt).
-
-**Gibt es `_Mitschrift-Daten/mitschrift.json` schon?** → laden, weiter mit Schritt 5.
-
-**Erstes Mal für dieses Fach:**
-1. Nachsehen, welche .docx-Dateien im Fach-Ordner liegen.
-2. Mit AskUserQuestion einfach fragen: *„In welches Word-Dokument sollen die
-   <Fach>-Mitschriften?“* – Optionen: die passenden vorhandenen Dateien (max. 3, die
-   wahrscheinlichste zuerst, z. B. eine namens „Mitschrift“ oder wie das Fach) und
-   „Neues Dokument ‚Mitschrift <Fach>.docx‘“.
-3. Bei einer vorhandenen Datei:
-   - Kopie nach `_Mitschrift-Daten/backup/ORIGINAL_<name>.docx` legen (nie überschreiben).
-   - `python "SKILL/scripts/docx_lesen.py" "<datei.docx>" "<Fach>/_Mitschrift-Daten/alt-tmp"`
-   - Den alten Inhalt **vollständig** in Stunden-Bausteine übertragen (siehe unten):
-     pro großem Thema eine „Stunde“; Datum unbekannt → Änderungsdatum der Datei bzw.
-     Reihenfolge beibehalten. Bilder übernehmen (EMF/WMF-Grafiken weglassen und kurz erwähnen).
-     Nichts weglassen – im Zweifel lieber mehr übernehmen.
-4. `mitschrift.json` anlegen:
-```json
-{ "fach": "EBC", "datei": "Mitschrift.docx", "untertitel": "Mitschrift · Schuljahr 2026/27", "stunden": [] }
-```
+### 4. Fach-Ordner
+Fach-Ordner = `<Schuljahres-Ordner>/<fach aus dem Export>` (anlegen, falls er fehlt), darin
+`_Mitschrift-Daten/stunden/` und `_Mitschrift-Daten/bilder/` (anlegen, falls sie fehlen).
 
 ### 5. Neue Stunde gestalten
-Aus den Notizen eine Stunde bauen und in `stunden` einfügen (Regeln: siehe „Gestaltungsregeln“ –
-**wortgetreu, nichts dazuschreiben**):
+Aus den Notizen die Stunden-Datei `<Fach>/_Mitschrift-Daten/stunden/<datum>_<Thema-mit-Bindestrichen>.json`
+schreiben (Regeln: siehe „Gestaltungsregeln“ – **wortgetreu, nichts dazuschreiben**):
 ```json
-{ "datum": "2026-11-16", "thema": "Das Internet", "quelle": "Mitschrift_EBC_2026-11-16_Das-Internet.html",
+{ "fach": "EBC", "datum": "2026-11-16", "thema": "Das Internet",
+  "datei": "2026-11-16 Das Internet.docx",
+  "quelle": "Mitschrift_EBC_2026-11-16_Das-Internet.html",
   "bloecke": [ … ] }
 ```
-- **Gleiches Fach + gleiches Datum + gleiches Thema schon vorhanden?** Dann wurde die Stunde
-  nochmal exportiert (z. B. nach dem Weiterschreiben) → die alte Stunde **ersetzen**, nicht doppelt anlegen.
-- Kein Thema angegeben → ihre erste Überschrift als Thema nehmen; gibt es keine, kurz fragen (nichts erfinden).
-- Die Stunden werden automatisch nach Datum sortiert.
+- `datei` = Name des Word-Dokuments im Fach-Ordner: `<datum> <Thema>.docx`.
+- **Gibt es die Stunden-Datei schon** (gleiches Datum + Thema)? Dann wurde die Stunde nochmal
+  exportiert (z. B. nach dem Weiterschreiben) → **überschreiben**; das Word-Dokument wird ersetzt
+  (die alte Version landet automatisch in `backup/`).
+- Kein Thema angegeben → ihre erste Überschrift als Thema nehmen; gibt es keine, „Mitschrift“.
 
 ### 5b. Zeichnungen sauber nachzeichnen
 Für jede Skizze/Mindmap/jedes Diagramm aus `[HANDSCHRIFT …]` oder `[ZEICHNUNG …]`:
@@ -131,25 +116,25 @@ node "SKILL/scripts/svg_zu_png.js" "<…>.svg" "<…>.png"
 
 ### 6. Word-Dokument bauen
 ```bash
-node "SKILL/scripts/word_erstellen.js" "<Fach>/_Mitschrift-Daten/mitschrift.json"
+node "SKILL/scripts/word_erstellen.js" "<Fach>/_Mitschrift-Daten/stunden/<datum>_<Thema>.json"
 ```
 - Exit-Code 3 / `FEHLER_DATEI_OFFEN` → sagen: *„Bitte schließ kurz die Word-Datei <name>,
   dann mache ich weiter.“* und danach erneut ausführen.
-- Die alte Word-Datei wird automatisch gesichert (`backup/`, die letzten 10).
+- Gibt es die Word-Datei schon, wird die alte automatisch gesichert (`backup/`, die letzten 10).
 
-### 7. Kontrolle (bei der ersten Stunde eines Fachs und bei Design-Änderungen Pflicht)
+### 7. Kontrolle (immer)
 ```bash
 powershell -ExecutionPolicy Bypass -File "SKILL/scripts/vorschau.ps1" "<datei.docx>" "<scratchpad>/vorschau.pdf"
 ```
 Die PDF-Seiten der neuen Stunde ansehen: Ist **jedes ihrer Wörter** drin – und **kein fremdes**?
-Tabellen lesbar? Zeichnungen richtig groß? Falls nötig `mitschrift.json` korrigieren und neu bauen. (Falls Word nicht
+Tabellen lesbar? Zeichnungen richtig groß? Falls nötig die Stunden-Datei korrigieren und neu bauen. (Falls Word nicht
 verfügbar ist, diesen Schritt auslassen.)
 
 ### 8. Aufräumen und kurz melden
 - Export nach `_Eingang/erledigt/` verschieben (aus Downloads ebenfalls dorthin).
 - Kurze Rückmeldung, z. B.:
-  *„Fertig ✓ EBC → Mitschrift.docx: Stunde vom 16.11. „Das Internet“ ist drin (2 Überschriften,
-  1 Mindmap sauber nachgezeichnet, 2 Tippfehler korrigiert).“*
+  *„Fertig ✓ EBC → „2026-11-16 Das Internet.docx“ (1 Mindmap sauber nachgezeichnet,
+  2 Tippfehler korrigiert).“*
   Wenn etwas unklar war (unleserliches Wort), das in einem Satz erwähnen.
 
 ## Gestaltungsregeln (so sollen die Mitschriften IMMER aussehen)
@@ -187,15 +172,15 @@ und schön gestaltet. Claude ist hier Layouter, nicht Autor.
 13. Sprache bleibt, wie sie geschrieben hat (Englisch bleibt Englisch).
 
 **Aussehen** (macht das Skript automatisch – nicht von Hand nachbauen)
-- Jedes Fach hat eine eigene Farbe (`SKILL/faecher.json`): Überschriften, Kästen,
+- **Eine Word-Datei pro Stunde.** Ganz oben nur eine kleine graue Datumszeile, dann **genau ihr
+  Inhalt**. Keine Titelseite, keine Übersicht, kein Inhaltsverzeichnis, kein Kapitel-/Titelbalken,
+  keine Seitenumbrüche zwischen Abschnitten. Unten nur „Seite X von Y“.
+- Jedes Fach hat eine eigene Farbe (`SKILL/faecher.json`): ihre Überschriften, Kästen,
   Tabellenköpfe und Aufzählungszeichen in dieser Farbe. Schrift Arial 11.
-- Titelseite mit Fachname und anklickbarer Übersicht aller Stunden.
-- Jede Stunde beginnt auf einer neuen Seite mit Datum und farbigem Titelbalken.
-- Fußzeile mit Fach und „Seite X von Y“.
 
 Will sie das Design ändern (z. B. „mach Mathe lila“, „größere Schrift“): Farben in
-`faecher.json`, Layout in `scripts/word_erstellen.js` ändern, dann alle betroffenen Fächer
-neu bauen und mit der Vorschau kontrollieren. Neues Fach: Zeile in `faecher.json` ergänzen.
+`faecher.json`, Layout in `scripts/word_erstellen.js` ändern, dann die betroffenen Stunden-Dateien
+neu bauen (nur auf Wunsch auch ältere) und mit der Vorschau kontrollieren. Neues Fach: Zeile in `faecher.json` ergänzen.
 
 ## Bausteine (Felder in `bloecke`)
 
@@ -221,4 +206,4 @@ In Tabellenzellen: `\n` = neue Zeile, Zeile beginnt mit `- ` = Aufzählungspunkt
 Bildgrößen-Richtwert: Zeichnungen mit „Breite x %“ im Export → `breite_cm` ≈ x % von 17 cm
 (mind. 6 cm). Kleine Skizzen 6–9 cm, normale 10–13 cm, große Diagramme bis 17 cm.
 
-Ein vollständiges Beispiel steht in `SKILL/beispiel/mitschrift.json`.
+Ein vollständiges Beispiel steht in `SKILL/beispiel/2026-11-16_Das-Internet.json`.

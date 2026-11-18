@@ -23,11 +23,18 @@ const JSZip = require("jszip");
 const args = process.argv.slice(2);
 if (!args[0]) { console.error("Aufruf: node word_erstellen.js <mitschrift.json> [--ausgabe datei.docx]"); process.exit(1); }
 const jsonPfad = path.resolve(args[0]);
-const datenOrdner = path.dirname(jsonPfad);
-const fachOrdner = path.dirname(datenOrdner);
 const D = JSON.parse(fs.readFileSync(jsonPfad, "utf8"));
+// EINZEL = eine Stunde pro Word-Datei (Standard): { fach, datum, thema, datei, bloecke }
+// sonst alte Form mit Titelseite: { fach, datei, stunden: [...] }
+const EINZEL = Array.isArray(D.bloecke);
+// Bilder liegen relativ zum Ordner „_Mitschrift-Daten“ (die JSON kann auch in …/stunden/ liegen)
+let datenOrdner = path.dirname(jsonPfad);
+for (let d = datenOrdner; path.dirname(d) !== d; d = path.dirname(d)) { if (path.basename(d) === "_Mitschrift-Daten") { datenOrdner = d; break; } }
+const fachOrdner = path.dirname(datenOrdner);
+const dateiSauber = s => String(s).replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
 const ausIdx = args.indexOf("--ausgabe");
-const ausgabe = ausIdx >= 0 ? path.resolve(args[ausIdx + 1]) : path.join(fachOrdner, D.datei || `Mitschrift ${D.fach}.docx`);
+const ausgabe = ausIdx >= 0 ? path.resolve(args[ausIdx + 1])
+  : path.join(fachOrdner, D.datei || (EINZEL ? `${dateiSauber(`${D.datum || ""} ${D.thema || "Mitschrift"}`)}.docx` : `Mitschrift ${D.fach}.docx`));
 
 const faecher = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "faecher.json"), "utf8"));
 const fachKey = Object.keys(faecher).find(k => k.toLowerCase() === String(D.fach || "").toLowerCase());
@@ -266,10 +273,15 @@ function datumLang(iso) {
 const datumKurz = iso => { const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}.${m[2]}.${m[1]}` : (iso || "–"); };
 
 /* ---------------- Dokument ---------------- */
-const stunden = (D.stunden || []).slice().sort((a, b) => String(a.datum || "").localeCompare(String(b.datum || "")));
+const stunden = EINZEL ? [D] : (D.stunden || []).slice().sort((a, b) => String(a.datum || "").localeCompare(String(b.datum || "")));
 const marke = i => `stunde_${i + 1}`;
 const kinder = [];
 
+if (EINZEL) {
+  // Nur ihre Stunde: kleines graues Datum oben, dann genau ihr Inhalt – keine Titelseite, kein Kapitel
+  if (D.datum) kinder.push(new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: datumLang(D.datum), size: 18, color: F.grau })] }));
+  for (const b of D.bloecke) kinder.push(...baustein(b));
+} else {
 // Titelseite mit Übersicht
 kinder.push(new Paragraph({ spacing: { before: 1400, after: 0 }, children: [new TextRun({ text: FACHNAME, bold: true, size: 60, color: F.akzent })] }));
 kinder.push(new Paragraph({
@@ -299,10 +311,11 @@ stunden.forEach((s, i) => {
   if (s.einleitung) kinder.push(...absatzText(s.einleitung, { run: { italics: true, color: "4B5563" }, para: { spacing: { after: 160 } } }));
   for (const b of s.bloecke || []) kinder.push(...baustein(b));
 });
+}
 
 const doc = new Document({
   creator: "Notizblock → Claude",
-  title: `${FACHNAME} – Mitschrift`,
+  title: EINZEL ? `${FACHNAME} – ${D.thema || "Mitschrift"} (${datumKurz(D.datum)})` : `${FACHNAME} – Mitschrift`,
   description: "Automatisch gestaltete Unterrichtsmitschrift",
   styles: {
     default: { document: { run: { font: FONT, size: 22, color: F.text }, paragraph: { spacing: { after: 120, line: 288 } } } },
@@ -336,7 +349,10 @@ const doc = new Document({
   },
   sections: [{
     properties: { page: { size: { width: SEITE_B, height: 16838 }, margin: { top: RAND, bottom: RAND, left: RAND, right: RAND, footer: 567 } } },
-    footers: { default: new Footer({ children: [new Paragraph({
+    footers: { default: new Footer({ children: [EINZEL ? new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ size: 16, color: F.grau, children: [sprache === "en" ? "Page " : "Seite ", PageNumber.CURRENT, sprache === "en" ? " of " : " von ", PageNumber.TOTAL_PAGES] })],
+    }) : new Paragraph({
       border: { top: { style: BorderStyle.SINGLE, size: 4, color: F.mittel, space: 6 } },
       children: [
         new TextRun({ text: `${FACHNAME} · ${sprache === "en" ? "Class notes" : "Mitschrift"}`, size: 16, color: F.grau }),

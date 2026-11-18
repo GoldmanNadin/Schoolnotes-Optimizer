@@ -1,0 +1,73 @@
+{
+  "fach": "EBC",
+  "datum": "2026-11-16",
+  "thema": "Das Internet",
+  "datei": "2026-11-16 Das Internet.docx",
+  "quelle": "Mitschrift_EBC_2026-11-16_Das-Internet.html",
+  "bloecke": [
+    {
+      "typ": "abschnitt",
+      "text": "Grundlagen"
+    },
+    {
+      "typ": "text",
+      "text": "Was braucht man?"
+    },
+    {
+      "typ": "nummern",
+      "punkte": [
+        "Device",
+        {
+          "text": "Betriebssystem",
+          "unterpunkte": [
+            "heute meist GUI"
+          ]
+        },
+        "NIC"
+      ]
+    },
+    {
+      "typ": "liste",
+      "punkte": [
+        "Client",
+        "Server"
+      ]
+    },
+    {
+      "typ": "merke",
+      "text": "Wichtig: DNS ist das Telefonbuch"
+    },
+    {
+      "typ": "bild",
+      "datei": "bilder/2026-11-16_mindmap-internet.png",
+      "breite_cm": 11
+    },
+    {
+      "typ": "tabelle",
+      "zeilen": [
+        [
+          "Name:",
+          "Wert"
+        ],
+        [
+          "IAP",
+          "Internet Access Provider"
+        ]
+      ],
+      "breiten": [
+        30,
+        70
+      ]
+    },
+    {
+      "typ": "text",
+      "text": "Rechtsbündig",
+      "ausrichtung": "rechts"
+    },
+    {
+      "typ": "bild",
+      "datei": "bilder/2026-11-16_client-server.png",
+      "breite_cm": 10
+    }
+  ]
+}
