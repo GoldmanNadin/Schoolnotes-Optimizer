@@ -100,3 +100,17 @@ Voraussetzung: Python und Node.js.
 | `bauen.ps1` | baut die App und installiert sie |
 | `skill/mitschrift/` | Claude-Skill: Anleitung, Gestaltungsregeln, Skripte, Beispiel |
 | `.github/workflows/installer.yml` | baut bei neuer Version automatisch den Installer für „Releases“ |
+
+## Lizenz
+
+Dieses Projekt ist **Open Source** unter der [MIT-Lizenz](LICENSE) – © 2026 Nadin Zerlauth.
+Du darfst es frei benutzen, verändern und weitergeben, solange der Lizenzhinweis erhalten bleibt.
+
+Verwendete fremde Bausteine:
+- [MathLive](https://mathlive.io) (Formel-Feld) – MIT-Lizenz, siehe [`app/vendor/mathlive/LICENSE.txt`](app/vendor/mathlive/LICENSE.txt)
+- [Electron](https://www.electronjs.org) und [docx](https://github.com/dolanmiu/docx) – MIT-Lizenz (werden beim Bauen geladen)
+- Bilder aus der Onlinebild-Suche stammen von [Wikimedia Commons](https://commons.wikimedia.org) und behalten ihre eigene Lizenz (wird beim Einfügen angezeigt)
+
+## Mitmachen
+
+Ideen, Fehler oder Verbesserungen? Einfach unter **Issues** melden oder einen **Pull Request** schicken.
