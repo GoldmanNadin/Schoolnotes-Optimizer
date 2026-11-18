@@ -1,0 +1,6 @@
+{
+  "name": "schulskript",
+  "description": "Erstellt Schul-Mitschriften, Skripte und Lernunterlagen im festen Design (Inhaltsverzeichnis, Merke-Boxen, Tabellen, Fusszeile) mit einer eigenen Farbe pro Fach. Der gelieferte Inhalt wird wortgetreu uebernommen, nur Layout und Zeichnungen werden verbessert.",
+  "version": "1.0.0",
+  "license": "MIT"
+}

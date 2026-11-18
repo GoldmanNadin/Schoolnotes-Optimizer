@@ -1,0 +1,7 @@
+{
+  "_hinweis": "Start-Register. Neue Faecher werden in Claudes Gedaechtnis (/areas/schulskript-faecher.md) mitgefuehrt, weil Skill-Dateien nicht dauerhaft beschreibbar sind.",
+  "faecher": {
+    "EBC": {"name": "Gruen", "hex": "1F7A5C"},
+    "Naturwissenschaften": {"name": "Blau", "hex": "0070C0"}
+  }
+}

@@ -83,6 +83,20 @@ versteht es z. B. eine Mindmap und baut sie sinnvoll ins Word-Dokument ein.
 Rechtsklick auf [`skill/installieren.ps1`](skill/installieren.ps1) → **„Mit PowerShell ausführen“**.
 Voraussetzung: Python und Node.js.
 
+## Zweiter Skill: „schulskript“
+
+Im Ordner [`skill/schulskript`](skill/schulskript) liegt ein zusätzlicher Claude-Skill. Er macht aus
+einem **Foto, Text oder Stichworten** einer Schulstunde ein gestaltetes Skript (Word + PDF) – mit
+Inhaltsverzeichnis, Merke-Boxen, Tabellen und einer eigenen Farbe pro Fach, **ohne Deckblatt**.
+Auch hier gilt: Der gelieferte Text wird **wortgetreu** übernommen, nur Layout und Zeichnungen
+werden schöner.
+
+- Ablauf und Regeln: [`skill/schulskript/SKILL.md`](skill/schulskript/SKILL.md)
+- Benötigt Python mit `python-docx`; für das PDF und das Inhaltsverzeichnis mit Seitenzahlen LibreOffice
+  (`soffice`) und Poppler (`pdfinfo`, `pdftotext`)
+- Installieren: den Ordner `skill/schulskript` nach `~/.claude/skills/` kopieren – oder als ZIP
+  in claude.ai unter *Einstellungen → Fähigkeiten* hochladen
+
 ## Design anpassen
 
 - **Farben pro Fach:** [`skill/mitschrift/faecher.json`](skill/mitschrift/faecher.json)
@@ -99,6 +113,7 @@ Voraussetzung: Python und Node.js.
 | `build/` | App-Symbol |
 | `bauen.ps1` | baut die App und installiert sie |
 | `skill/mitschrift/` | Claude-Skill: Anleitung, Gestaltungsregeln, Skripte, Beispiel |
+| `skill/schulskript/` | Claude-Skill: Skript aus Foto/Text/Stichworten (Word + PDF) |
 | `.github/workflows/installer.yml` | baut bei neuer Version automatisch den Installer für „Releases“ |
 
 ## Lizenz
