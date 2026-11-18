@@ -164,7 +164,8 @@ und schön gestaltet. Claude ist hier Layouter, nicht Autor.
 8. Was sie mit `⇥` (Tab) in Spalten geschrieben hat („Begriff ⇥ Erklärung“) → `tabelle`
    (Kopfzeile nur, wenn sie selbst eine Kopfzeile geschrieben hat; sonst `kopf` weglassen).
 9. Ihre Kästen: `[MERKE-KASTEN]` → `merke`, `[BEISPIEL-KASTEN]` → `beispiel`, `[ZITAT]` → `merke`
-   mit Titel „Zitat“. Zusätzlich darf Wichtiges, das sie **markiert, farbig, unterstrichen, eingekreist
+   mit Titel „Zitat“, `[RAHMEN]` → `rahmen` (schwarzer Rahmen ohne Überschrift – so wie die Lehrerin
+   es umrandet hat). Eingerahmte Wörter `[[…]]` bleiben im Text als `[[…]]` stehen. Zusätzlich darf Wichtiges, das sie **markiert, farbig, unterstrichen, eingekreist
    oder mit „!!“** geschrieben hat, in einen `merke`-Kasten oder ==hervorgehoben== werden.
    „Achtung“-Kasten nur, wenn sie selbst „Achtung“/„Vorsicht“/„Test!“ o. Ä. geschrieben hat.
 10. **Formeln** aus dem Notizblock stehen als `$…$` (LaTeX) im Text: **genau so übernehmen** – mitten im
@@ -203,9 +204,10 @@ neu bauen (nur auf Wunsch auch ältere) und mit der Vorschau kontrollieren. Neue
 | `bild` | `datei` ("bilder/…png", relativ zu `_Mitschrift-Daten`), `breite_cm` (Standard 12, max. 17), `unterschrift` (nur Bildquelle) | nachgezeichnete Skizze, Foto, Screenshot |
 | `begriffe` | `eintraege`: [{ "begriff": "…", "erklaerung": "…" }], `titel: null` | nur, wenn SIE so eine Liste geschrieben hat |
 | `zusammenfassung` | `punkte` | nur, wenn SIE eine Zusammenfassung geschrieben hat |
+| `rahmen` | `text` und/oder `punkte`/`nummern` | ihr eingerahmter Absatz (schwarzer Rahmen) |
 
 In allen Texten: `**fett**`, `*kursiv*`, `__unterstrichen__`, `==hervorgehoben==` (farbig hinterlegt),
-`^{hoch}`, `_{tief}`, `$LaTeX-Formel$` (echte Word-Formel mitten im Satz).
+`^{hoch}`, `_{tief}`, `$LaTeX-Formel$` (echte Word-Formel mitten im Satz), `[[eingerahmt]]`.
 In Tabellenzellen: `\n` = neue Zeile, Zeile beginnt mit `- ` = Aufzählungspunkt.
 
 Bildgrößen-Richtwert: Zeichnungen mit „Breite x %“ im Export → `breite_cm` ≈ x % von 17 cm

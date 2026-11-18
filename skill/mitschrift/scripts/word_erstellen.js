@@ -154,13 +154,14 @@ function lauf(text, basis) {
 function laeufe(text, basis = {}) {
   const out = [];
   const s = String(text ?? "");
-  const re = /(\$[^$]+?\$|\^\{[^}]*\}|_\{[^}]*\}|\*\*[^*]+?\*\*|==[^=]+?==|__[^_]+?__|\*[^*\s][^*]*?\*)/g;
+  const re = /(\[\[[^\]]+?\]\]|\$[^$]+?\$|\^\{[^}]*\}|_\{[^}]*\}|\*\*[^*]+?\*\*|==[^=]+?==|__[^_]+?__|\*[^*\s][^*]*?\*)/g;
   let pos = 0, m;
   while ((m = re.exec(s))) {
     if (m.index > pos) out.push(lauf(s.slice(pos, m.index), basis));
     const t = m[0];
     // verschachtelt erlaubt, z. B. **fett mit ==Markierung==**
-    if (t.startsWith("$")) out.push(latexZuMath(t.slice(1, -1)));
+    if (t.startsWith("[[")) out.push(...laeufe(t.slice(2, -2), { ...basis, border: { style: BorderStyle.SINGLE, size: 8, color: "262626", space: 1 } }));
+    else if (t.startsWith("$")) out.push(latexZuMath(t.slice(1, -1)));
     else if (t.startsWith("^{")) out.push(...laeufe(t.slice(2, -1), { ...basis, superScript: true }));
     else if (t.startsWith("_{")) out.push(...laeufe(t.slice(2, -1), { ...basis, subScript: true }));
     else if (t.startsWith("**")) out.push(...laeufe(t.slice(2, -2), { ...basis, bold: true }));
@@ -333,6 +334,7 @@ function baustein(b) {
     case "merke": return kasten({ titel: b.titel || T.merke, titelFarbe: F.akzent, fill: F.hell, rand: F.akzent, kinder: kastenInhalt(b) });
     case "beispiel": return kasten({ titel: b.titel || T.beispiel, titelFarbe: "5B6470", fill: "F4F5F7", rand: "9AA3AE", kinder: kastenInhalt(b) });
     case "achtung": return kasten({ titel: b.titel || T.achtung, titelFarbe: "B42318", fill: "FDECEA", rand: "D92D20", kinder: kastenInhalt(b) });
+    case "rahmen": return kasten({ titel: b.titel || null, titelFarbe: F.dunkel, fill: "FFFFFF", rand: "262626", rundum: true, kinder: kastenInhalt(b) });
     case "zusammenfassung": return kasten({ titel: b.titel || T.zusammenfassung, titelFarbe: F.dunkel, fill: "FFFFFF", rand: F.akzent, rundum: true, kinder: kastenInhalt(b) });
     case "formel": {
       if (b.latex) { // echte Word-Formel, mittig

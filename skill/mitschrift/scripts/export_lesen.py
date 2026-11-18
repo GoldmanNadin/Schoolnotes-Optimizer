@@ -24,6 +24,8 @@ LEGENDE = """<!-- Legende der Markierungen:
 [MERKE-KASTEN] ... [/MERKE-KASTEN]   = von der Schülerin als „Merke“ markiert (wichtig!)
 [BEISPIEL-KASTEN] ... [/BEISPIEL-KASTEN]  = als Beispiel markiert
 [ZITAT] ... [/ZITAT]                   = Zitat / Definition
+[RAHMEN] ... [/RAHMEN]                 = eingerahmter Absatz (wie von der Lehrerin umrandet → wichtig!)
+[[…]]                                  = eingerahmte Wörter im Satz
 $…$                                    = Formel (LaTeX), genau so übernehmen, z. B. $\\frac{3}{4}$ = ¾
 [Formelzeile] $…$                      = Formel in einer eigenen, zentrierten Zeile
 ^{…} / _{…}                            = hoch- / tiefgestellter Text im normalen Text (z. B. m^{2}, H_{2}O)
@@ -166,7 +168,7 @@ class Leser(HTMLParser):
                 strich = any("striche" in k for k in self.listenklassen)
                 self.puffer = "   " * tiefe + ("– " if strich else "- ")
         elif tag == "blockquote":
-            art = {"beispiel": "BEISPIEL-KASTEN", "zitat": "ZITAT"}.get((a.get("class") or "").strip(), "MERKE-KASTEN")
+            art = {"beispiel": "BEISPIEL-KASTEN", "zitat": "ZITAT", "rahmen": "RAHMEN"}.get((a.get("class") or "").strip(), "MERKE-KASTEN")
             self.kaesten.append(art)
             self.leerzeile(); self.zeilen.append(f"[{art}]")
         elif tag == "table":
@@ -186,6 +188,8 @@ class Leser(HTMLParser):
         elif tag in ("span", "font"):
             stil = a.get("style", "") or ""
             ende = ""
+            if "rahmen-wort" in (a.get("class") or ""):
+                self.schreibe("[["); ende = "]]"
             bg = re.search(r"background(?:-color)?:\s*([^;]+)", stil)
             if bg and rgb(bg.group(1)) not in (None, (255, 255, 255)):
                 self.schreibe("=="); ende = "==" + ende

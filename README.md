@@ -35,6 +35,8 @@ Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShel
 - Ausrichtung **links, zentriert, rechts, Blocksatz** (Strg+L / E / R / J), Einzug vergrößern/verkleinern
 - **Überall schreiben**: Doppelklick auf eine freie Stelle → dort ein Textfeld (z. B. um Pfeile zu
   beschriften). Textfelder anklicken = bearbeiten, mit der Maus ziehen = verschieben
+- **Hochzahlen im Text**: einfach „^“ tippen (m^2 → m²), Leertaste oder Tab macht normal weiter
+- **Einrahmen** wie die Lehrerin: Formatvorlage **Rahmen** für ganze Absätze, Knopf **[ab]** für markierte Wörter
 - Fett, kursiv, unterstrichen, **hoch-/tiefgestellt** (m², H₂O – Strg+Umschalt+Plus / Strg+#),
   Textfarben, Textmarker, Tabellen (Tab springt zur nächsten Zelle)
 
@@ -48,6 +50,7 @@ Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShel
   Index – **Tab** springt wieder heraus, ganz außen zurück in den normalen Text
 - Knöpfe für Bruch, Hochzahl, Wurzel, Klammer, ·, ±, ≤, ≥, ≠, ≈, π, Δ, ∞ und eine Formel-Tastatur ⌨
 - Steht die Formel allein in einer Zeile, wird sie automatisch zentriert
+- Fertige Formel **anklicken**, um sie zu ändern
 - Im Word-Dokument werden daraus **echte, bearbeitbare Word-Formeln**
 - Rechtschreibprüfung mit Vorschlägen per Rechtsklick
 
