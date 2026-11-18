@@ -189,8 +189,8 @@ neu bauen (nur auf Wunsch auch ältere) und mit der Vorschau kontrollieren. Neue
 | `abschnitt` | `text`, optional `ausrichtung` | ihre Überschrift 1 (genau ihr Wortlaut) |
 | `unterabschnitt` | `text` | Überschrift 2. Ebene |
 | `text` | `text`, optional `ausrichtung` ("mitte" / "rechts" / "blocksatz"), `einzug_cm` | Absatz (Zeilenumbruch `\n` = neuer Absatz, `\t` = Tab) |
-| `liste` | `punkte`: Liste aus Text oder `{ "text": "…", "unterpunkte": [ … ] }` | Aufzählung |
-| `nummern` | `punkte` (wie oben) | nummerierte Schritte |
+| `liste` | `punkte`: Liste aus Text oder `{ "text": "…", "unterpunkte": [ … ] }`, `art`: "punkte" (•) oder "striche" (–) – wie sie es geschrieben hat | Aufzählung |
+| `nummern` | `punkte` (wie oben), `art`: "nummern" (1.), "buchstaben" (a)) oder "roemisch" (I.) | Nummerierung |
 | `tabelle` | `kopf`: [..], `zeilen`: [[..],[..]], optional `breiten`: [30,70] (Prozent), `unterschrift`, `erste_spalte_fett` (Standard true) | Vergleiche |
 | `merke` | `text` und/oder `punkte`, optional `titel` | Definition, Kernaussage |
 | `beispiel` | `text` und/oder `punkte`/`nummern`, optional `titel` | Beispiel, Rechenbeispiel |

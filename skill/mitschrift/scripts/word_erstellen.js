@@ -90,18 +90,20 @@ const absatzText = (text, opt = {}) => String(text ?? "").split("\n").map(z => n
 
 /* ---------------- Listen ---------------- */
 let nummernInstanz = 0;
-function liste(punkte, nummeriert, ebene = 0, instanz = null) {
+// art: Aufzählung "punkte" (•) oder "striche" (–); Nummerierung "nummern" (1.), "buchstaben" (a)), "roemisch" (I.)
+function liste(punkte, nummeriert, ebene = 0, instanz = null, art = null) {
   if (nummeriert && instanz === null) instanz = ++nummernInstanz;
+  const ref = nummeriert ? ({ buchstaben: "buchstaben", roemisch: "roemisch" }[art] || "nummern") : (art === "striche" ? "striche" : "punkte");
   const out = [];
   for (const p of punkte || []) {
     const text = typeof p === "string" ? p : (p.text ?? "");
     out.push(new Paragraph({
       children: laeufe(text),
-      numbering: nummeriert ? { reference: "nummern", level: Math.min(ebene, 1), instance: instanz } : { reference: "punkte", level: Math.min(ebene, 2) },
+      numbering: nummeriert ? { reference: ref, level: Math.min(ebene, 1), instance: instanz } : { reference: ref, level: Math.min(ebene, 2) },
       spacing: { after: 60 },
     }));
     const unter = typeof p === "object" && (p.unterpunkte || p.punkte);
-    if (unter && unter.length) out.push(...liste(unter, nummeriert, ebene + 1, instanz));
+    if (unter && unter.length) out.push(...liste(unter, nummeriert, ebene + 1, instanz, art));
   }
   return out;
 }
@@ -237,8 +239,8 @@ function baustein(b) {
     case "abschnitt": return [new Paragraph({ heading: HeadingLevel.HEADING_2, ...absatzOpt(b), children: laeufe(b.text) })];
     case "unterabschnitt": return [new Paragraph({ heading: HeadingLevel.HEADING_3, ...absatzOpt(b), children: laeufe(b.text) })];
     case "text": return absatzText(b.text, { para: absatzOpt(b) });
-    case "liste": return [...liste(b.punkte, false), abstand(4)];
-    case "nummern": return [...liste(b.punkte, true), abstand(4)];
+    case "liste": return [...liste(b.punkte, false, 0, null, b.art), abstand(4)];
+    case "nummern": return [...liste(b.punkte, true, 0, null, b.art), abstand(4)];
     case "tabelle": return tabelle(b);
     case "begriffe": return begriffe(b);
     case "bild": return bild(b);
@@ -344,6 +346,19 @@ const doc = new Document({
       { reference: "nummern", levels: [
         { level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 400, hanging: 320 } }, run: { color: F.akzent, bold: true } } },
         { level: 1, format: LevelFormat.LOWER_LETTER, text: "%2)", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 800, hanging: 320 } }, run: { color: F.akzent } } },
+      ] },
+      { reference: "striche", levels: [
+        { level: 0, format: LevelFormat.BULLET, text: "–", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 400, hanging: 280 } }, run: { color: F.akzent } } },
+        { level: 1, format: LevelFormat.BULLET, text: "–", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 800, hanging: 280 } }, run: { color: F.akzent } } },
+        { level: 2, format: LevelFormat.BULLET, text: "–", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 1200, hanging: 280 } }, run: { color: F.akzent } } },
+      ] },
+      { reference: "buchstaben", levels: [
+        { level: 0, format: LevelFormat.LOWER_LETTER, text: "%1)", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 400, hanging: 320 } }, run: { color: F.akzent, bold: true } } },
+        { level: 1, format: LevelFormat.LOWER_ROMAN, text: "%2.", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 800, hanging: 320 } }, run: { color: F.akzent } } },
+      ] },
+      { reference: "roemisch", levels: [
+        { level: 0, format: LevelFormat.UPPER_ROMAN, text: "%1.", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 480, hanging: 400 } }, run: { color: F.akzent, bold: true } } },
+        { level: 1, format: LevelFormat.LOWER_LETTER, text: "%2)", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 880, hanging: 320 } }, run: { color: F.akzent } } },
       ] },
     ],
   },
