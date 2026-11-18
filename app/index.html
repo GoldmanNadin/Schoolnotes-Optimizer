@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src https:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src https:; font-src 'self' data:; media-src 'self' data:">
 <title>Notizblock</title>
+<script src="vendor/mathlive/mathlive.min.js"></script>
 <style>
 :root{
   --akzent:#1F7A5C; --akzent-hell:#E8F3EF; --akzent-mittel:#C7E3D8;
@@ -121,9 +122,32 @@ body.stiftmodus .hinweis-stift{display:block}
 #editor p.bildquelle{font-size:11.5px;color:#6B7280;text-align:center;margin-top:-4px}
 #editor .zeichenplatz{display:block;margin:0;user-select:none}
 #tinte{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#editor sup,#editor sub{font-size:.72em;line-height:0}
+#editor .formel{display:inline-block;vertical-align:middle;margin:0 2px;cursor:pointer;border-radius:4px}
+#editor .formel math-field{font-size:1.18em;background:transparent;border:0;padding:0 2px;min-width:12px;display:inline-block;--caret-color:var(--akzent);--selection-background-color:var(--akzent-hell);--contains-highlight-background-color:transparent}
+#editor .formel math-field::part(menu-toggle),#editor .formel math-field::part(virtual-keyboard-toggle){display:none}
+#editor p.formelzeile{text-align:center;margin:10px 0}
 #tinte text{font-family:Calibri,Carlito,"Segoe UI",sans-serif;white-space:pre}
 </style>
 <style id="nur-editor">
+#editor .formel:hover{background:var(--akzent-hell)}
+#editor .formel.bearbeiten{background:#fff;box-shadow:0 0 0 2px var(--akzent);}
+body:not(.typ-mathe) .gruppe-mathe{display:none}
+.typkarten{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.typkarte{border:2px solid var(--linie);border-radius:10px;padding:12px;text-align:left;background:#fff}
+.typkarte:hover{border-color:#B9C0CA}
+.typkarte.an{border-color:var(--akzent);background:var(--akzent-hell)}
+.typkarte b{display:block;font-size:15px;margin-bottom:4px}
+.typkarte span{font-size:12.5px;color:#4B5563}
+.farbwahl{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+.farbwahl button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #C3C9D2}
+.farbwahl button.an{box-shadow:0 0 0 3px #1F2328}
+.fachliste{display:flex;flex-direction:column;gap:6px;margin:10px 0;max-height:50vh;overflow:auto}
+.fachzeile{display:flex;align-items:center;gap:10px;border:1px solid var(--linie);border-radius:8px;padding:6px 10px}
+.fachzeile i{width:16px;height:16px;border-radius:50%;flex:none}
+.fachzeile .nm{flex:1;font-weight:600}
+.fachzeile .ty{font-size:12px;color:var(--leise)}
+.dialog label.lab{display:block;font-size:12px;color:var(--leise);text-transform:uppercase;letter-spacing:.05em;margin-top:12px}
 #editor img.gewaehlt{outline:3px solid var(--akzent);outline-offset:2px}
 body.stiftmodus #tinte{pointer-events:all;cursor:crosshair}
 body.stiftmodus.wz-radierer #tinte{cursor:cell}
@@ -204,6 +228,8 @@ ol.schritte li{margin:4px 0}
         <button class="wz" data-cmd="bold" title="Fett (Strg+B)"><b>F</b></button>
         <button class="wz" data-cmd="italic" title="Kursiv (Strg+I)"><i style="font-family:Georgia,serif">K</i></button>
         <button class="wz" data-cmd="underline" title="Unterstrichen (Strg+U)"><u>U</u></button>
+        <button class="wz" data-cmd="superscript" title="Hochgestellt, z. B. m² (Strg+Umschalt+Plus)"><span class="t">x<sup>2</sup></span></button>
+        <button class="wz" data-cmd="subscript" title="Tiefgestellt, z. B. H₂O (Strg+#)"><span class="t">x<sub>2</sub></span></button>
         <span class="trenner"></span>
         <button class="farbe" data-textfarbe="#1F2328" style="background:#1F2328" title="Schwarz"></button>
         <button class="farbe" data-textfarbe="#D32F2F" style="background:#D32F2F" title="Rot"></button>
@@ -239,6 +265,30 @@ ol.schritte li{margin:4px 0}
         <button class="wz" id="netzbild-knopf" title="Bild aus dem Internet suchen oder per Adresse einfügen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="t">Onlinebild</span></button>
       </div>
       <div class="name">Einfügen</div>
+    </div>
+
+    <div class="gruppe gruppe-mathe">
+      <div class="reihe">
+        <button class="wz" id="formel-neu" title="Neue Formel (Strg+M oder Alt+=) – darin wird „/“ zum Bruch, „^“ zur Hochzahl, Tab springt heraus"><span class="t" style="font-family:'Cambria Math',serif;font-size:15px">√x</span><span class="t"><b>Formel</b></span></button>
+        <button class="wz" data-formel="\frac{#@}{#?}" title="Bruch (im Formel-Feld auch einfach „/“ tippen)"><span class="t" style="font-family:'Cambria Math',serif"><sup>a</sup>⁄<sub>b</sub></span></button>
+        <button class="wz" data-formel="#@^{#?}" title="Hochzahl (im Formel-Feld auch „^“)"><span class="t" style="font-family:'Cambria Math',serif">x<sup>n</sup></span></button>
+        <button class="wz" data-formel="#@_{#?}" title="Index (im Formel-Feld auch „_“)"><span class="t" style="font-family:'Cambria Math',serif">x<sub>n</sub></span></button>
+        <button class="wz" data-formel="\sqrt{#0}" title="Wurzel"><span class="t" style="font-family:'Cambria Math',serif">√</span></button>
+        <button class="wz" data-formel="\sqrt[#?]{#0}" title="n-te Wurzel"><span class="t" style="font-family:'Cambria Math',serif"><sup>n</sup>√</span></button>
+        <button class="wz" data-formel="\left(#0\right)" title="Klammer"><span class="t" style="font-family:'Cambria Math',serif">( )</span></button>
+        <span class="trenner"></span>
+        <button class="wz" data-formel="\cdot" title="Mal"><span class="t">·</span></button>
+        <button class="wz" data-formel="\pm" title="Plus-Minus"><span class="t">±</span></button>
+        <button class="wz" data-formel="\le" title="Kleiner gleich"><span class="t">≤</span></button>
+        <button class="wz" data-formel="\ge" title="Größer gleich"><span class="t">≥</span></button>
+        <button class="wz" data-formel="\ne" title="Ungleich"><span class="t">≠</span></button>
+        <button class="wz" data-formel="\approx" title="Ungefähr"><span class="t">≈</span></button>
+        <button class="wz" data-formel="\pi" title="Pi"><span class="t">π</span></button>
+        <button class="wz" data-formel="\Delta" title="Delta"><span class="t">Δ</span></button>
+        <button class="wz" data-formel="\infty" title="Unendlich"><span class="t">∞</span></button>
+        <button class="wz" id="formel-tastatur" title="Formel-Tastatur mit allen Zeichen ein-/ausblenden"><span class="t">⌨</span></button>
+      </div>
+      <div class="name">Formeln</div>
     </div>
 
     <div class="gruppe">
@@ -347,11 +397,43 @@ ol.schritte li{margin:4px 0}
       <button class="knopf" id="m-neu">✚ Neue leere Stunde beginnen</button>
       <button class="knopf" id="m-letzte">↺ Letzte (beendete) Stunde wiederherstellen</button>
       <button class="knopf" id="m-ordner">📁 Speicherort für Claude ändern</button>
-      <button class="knopf" id="m-fach">＋ Anderes Fach hinzufügen</button>
+      <button class="knopf" id="m-fach">📚 Fächer verwalten (anlegen, ändern, entfernen)</button>
     </div>
     <p id="m-info" style="color:var(--leise);font-size:12.5px;margin-top:14px"></p>
     <p style="color:var(--leise);font-size:12.5px">Tastenkürzel: Strg+Alt+1/2/3 Überschriften · Strg+Umschalt+N Standard · Strg+Umschalt+L Aufzählung · Strg+L/E/R/J links/zentriert/rechts/Blocksatz · Doppelklick auf freie Stelle = dort schreiben · „- “ oder „1. “ am Zeilenanfang startet eine Liste · Tab/Umschalt+Tab ein-/ausrücken · Strg+Mausrad/Strg+± Zoom</p>
     <div class="knoepfe"><button class="knopf" data-schliessen>Schließen</button></div>
+  </div>
+</div>
+
+<!-- Fach anlegen / ändern -->
+<div class="dialog-hg" id="fach-hg">
+  <div class="dialog" role="dialog">
+    <h2 id="fach-titel">Neues Fach anlegen</h2>
+    <p id="fach-hinweis" style="display:none"></p>
+    <label class="lab" for="fach-name">Name (am besten genau wie der Ordner)</label>
+    <input type="text" id="fach-name" placeholder="z. B. Mathe, Deutsch, EBC …" autocomplete="off">
+    <label class="lab">Art des Fachs</label>
+    <div class="typkarten">
+      <button class="typkarte an" data-typ="theorie"><b>📝 Theorie</b><span>Viel Text – z. B. Deutsch, Englisch, PBGW. Schreiben, Listen, hoch-/tiefgestellt (m², H₂O).</span></button>
+      <button class="typkarte" data-typ="mathe"><b>🔢 Mathe / Naturwissenschaft</b><span>Zusätzlich Formeln: Brüche mit „/“, Hochzahlen, Wurzeln, π, ≤ ≥ und mehr.</span></button>
+    </div>
+    <label class="lab">Farbe</label>
+    <div class="farbwahl" id="farbwahl"></div>
+    <div class="knoepfe">
+      <button class="knopf" id="fach-abbrechen">Abbrechen</button>
+      <button class="knopf knopf-haupt" id="fach-ok">Fach anlegen</button>
+    </div>
+  </div>
+</div>
+<div class="dialog-hg" id="faecher-hg">
+  <div class="dialog" role="dialog">
+    <h2>Fächer verwalten</h2>
+    <p style="font-size:13px;color:var(--leise)">Entfernen löscht das Fach nur aus dieser Liste – deine Ordner und Word-Dateien bleiben.</p>
+    <div class="fachliste" id="fachliste"></div>
+    <div class="knoepfe">
+      <button class="knopf" data-schliessen>Schließen</button>
+      <button class="knopf knopf-haupt" id="faecher-neu">＋ Neues Fach</button>
+    </div>
   </div>
 </div>
 
@@ -389,11 +471,7 @@ ol.schritte li{margin:4px 0}
 /* =====================================================================
    Grundlagen
    ===================================================================== */
-const FAECHER = [
-  ["BUNW","#2F855A"],["BW","#1F3A68"],["Business Behaviour","#7B4B94"],["Deutsch","#B23A48"],
-  ["EBC","#1F7A5C"],["Englisch","#3949AB"],["IMCM","#C8741A"],["Mathe","#1565C0"],
-  ["NW","#5A8A2F"],["OMAI","#00838F"],["PBGW","#6D4C41"],["UR","#455A64"]
-];
+const FARBEN = ["#1F7A5C", "#2F855A", "#5A8A2F", "#00838F", "#1565C0", "#3949AB", "#1F3A68", "#7B4B94", "#B23A48", "#D32F2F", "#C8741A", "#6D4C41", "#455A64"];
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const editor = $("#editor"), blatt = $("#blatt"), svg = $("#tinte"), flaeche = $("#flaeche");
@@ -426,20 +504,25 @@ const API = window.notizblock || {
 
 /* Farben pro Fach */
 function hell(hex, anteil) { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; const m = c => Math.round(c + (255 - c) * anteil); return "#" + [m(r), m(g), m(b)].map(x => x.toString(16).padStart(2, "0")).join(""); }
-let eigeneFaecher = [];
-const alleFaecher = () => FAECHER.concat(eigeneFaecher);
-const fachFarbe = n => (alleFaecher().find(f => f[0] === n) || [0, "#455A64"])[1];
+/* Fächer legt sie selbst an: { name, typ: "theorie" | "mathe", farbe } */
+let faecher = [];
+const fachInfo = n => faecher.find(f => f.name === n) || null;
+const aktuellesFach = () => fachInfo($("#fach").value);
 function setzeFarbe() {
-  const c = fachFarbe($("#fach").value), s = document.documentElement.style;
+  const f = aktuellesFach(), c = f ? f.farbe : "#455A64", s = document.documentElement.style;
   s.setProperty("--akzent", c); s.setProperty("--akzent-hell", hell(c, .9)); s.setProperty("--akzent-mittel", hell(c, .72));
+  document.body.classList.toggle("typ-mathe", !!f && f.typ === "mathe");
 }
 function fuelleFaecher(gewaehlt) {
-  if (gewaehlt && !alleFaecher().some(f => f[0] === gewaehlt)) eigeneFaecher.push([gewaehlt, "#455A64"]);
   const s = $("#fach"); s.innerHTML = "";
-  alleFaecher().forEach(([n]) => { const o = document.createElement("option"); o.value = o.textContent = n; s.appendChild(o); });
-  if (gewaehlt) s.value = gewaehlt;
+  if (!faecher.length) { const o = document.createElement("option"); o.value = ""; o.textContent = "– noch kein Fach –"; s.appendChild(o); }
+  faecher.forEach(f => { const o = document.createElement("option"); o.value = o.textContent = f.name; s.appendChild(o); });
+  const neu = document.createElement("option"); neu.value = "__neu__"; neu.textContent = "＋ Neues Fach …"; s.appendChild(neu);
+  if (gewaehlt && fachInfo(gewaehlt)) s.value = gewaehlt; else s.selectedIndex = 0;
+  s.dataset.vorher = s.value;
   setzeFarbe();
 }
+async function faecherSpeichern() { await API.einstellungSetzen("faecher", faecher); }
 
 /* =====================================================================
    Zustand: Tinte (Zeichnungen) – verankert an Absätzen
@@ -492,13 +575,14 @@ function merken(typ = "aktion") {
   verlauf.vor = []; verlauf.zeit = Date.now(); verlauf.typ = typ;
 }
 function wiederherstellen(z) {
-  editor.innerHTML = z.html; striche = JSON.parse(z.striche);
+  aktiveFormel = null; editor.innerHTML = z.html; striche = JSON.parse(z.striche); formelnAufbauen();
   editor.focus({ preventScroll: true }); caretSetzen(z.caret);
   neuOrdnen(); geaendert();
 }
 function rueckgaengig() { if (!verlauf.zurueck.length) return; verlauf.vor.push(zustand()); wiederherstellen(verlauf.zurueck.pop()); verlauf.typ = ""; }
 function wiederholen() { if (!verlauf.vor.length) return; verlauf.zurueck.push(zustand()); wiederherstellen(verlauf.vor.pop()); verlauf.typ = ""; }
 editor.addEventListener("beforeinput", e => {
+  if (e.target && e.target.closest && e.target.closest("math-field")) return;
   if (e.inputType === "historyUndo") { e.preventDefault(); rueckgaengig(); return; }
   if (e.inputType === "historyRedo") { e.preventDefault(); wiederholen(); return; }
   const gruppe = /^insertText|^insertCompositionText/.test(e.inputType) ? "tippen" : /^delete/.test(e.inputType) ? "loeschen" : e.inputType;
@@ -761,6 +845,7 @@ document.addEventListener("keydown", e => {
   const offenerDialog = $(".dialog-hg.offen");
   if (offenerDialog) { if (e.key === "Escape") offenerDialog.classList.remove("offen"); return; }
   if (document.activeElement === $("#tinte-eingabe")) return;
+  if (e.target && e.target.closest && e.target.closest("math-field")) return; // Formel-Feld regelt seine Tasten selbst
   if (strg && !e.altKey && e.key.toLowerCase() === "z" && (imEditor || document.body.classList.contains("stiftmodus") || document.activeElement === document.body)) { e.preventDefault(); e.shiftKey ? wiederholen() : rueckgaengig(); return; }
   if (strg && e.key.toLowerCase() === "y" && (imEditor || document.activeElement === document.body)) { e.preventDefault(); wiederholen(); return; }
   if (strg && e.key.toLowerCase() === "s") { e.preventDefault(); speichern(); meldung("Gespeichert ✓"); return; }
@@ -770,6 +855,9 @@ document.addEventListener("keydown", e => {
   if (strg && e.altKey && ["1", "2", "3"].includes(e.key)) { e.preventDefault(); vorlageAnwenden("h" + e.key); return; }
   if (strg && e.shiftKey && e.key.toLowerCase() === "n") { e.preventDefault(); vorlageAnwenden("p"); return; }
   if (strg && e.shiftKey && e.key.toLowerCase() === "l") { e.preventDefault(); liste("punkte"); return; }
+  if (strg && e.shiftKey && (e.key === "+" || e.key === "*" || e.code === "BracketRight")) { e.preventDefault(); befehl("superscript"); return; }
+  if (strg && !e.shiftKey && (e.key === "#" || e.code === "Backslash")) { e.preventDefault(); befehl("subscript"); return; }
+  if (((strg && !e.shiftKey && e.key.toLowerCase() === "m") || (e.altKey && !strg && (e.key === "=" || e.key === "0" && e.shiftKey))) && document.body.classList.contains("typ-mathe")) { e.preventDefault(); formelEinfuegen(); return; }
   if (strg && !e.shiftKey && !e.altKey) { const w = { l: "left", e: "center", r: "right", j: "justify" }[e.key.toLowerCase()]; if (w) { e.preventDefault(); ausrichten(w); return; } }
   if (e.key === " " && autoformat(e)) return;
   if (e.key === "Tab") {
@@ -1234,6 +1322,108 @@ new ResizeObserver(() => neuOrdnen()).observe(editor);
 editor.addEventListener("load", e => { if (e.target.tagName === "IMG") neuOrdnen(); }, true);
 
 /* =====================================================================
+   Formeln (MathLive): „/“ = Bruch, „^“ = Hochzahl, „_“ = Index, Tab = heraus
+   ===================================================================== */
+let aktiveFormel = null;
+if (window.MathfieldElement) {
+  // Schriften liegen in vendor/mathlive/fonts (Standard „./fonts“ relativ zur Bibliothek)
+  MathfieldElement.soundsDirectory = null;
+  try { MathfieldElement.locale = "de"; } catch { }
+}
+function neuesFeld(latex) {
+  const mf = document.createElement("math-field");
+  mf.setAttribute("read-only", ""); mf.setAttribute("math-virtual-keyboard-policy", "manual");
+  mf.setAttribute("smart-fence", "on"); mf.setAttribute("default-mode", "math");
+  mf.smartSuperscript = false; // Hochzahl bleibt offen, bis Tab gedrückt wird (z. B. x¹⁰)
+  mf.value = latex || "";
+  return mf;
+}
+function formelnAufbauen() {
+  for (const sp of editor.querySelectorAll(".formel")) {
+    sp.contentEditable = "false";
+    let mf = sp.querySelector("math-field");
+    if (!mf || mf.parentNode !== sp) { sp.innerHTML = ""; mf = neuesFeld(sp.dataset.latex); sp.appendChild(mf); }
+    else if (sp !== aktiveFormel) { if (mf.value !== (sp.dataset.latex || "")) mf.value = sp.dataset.latex || ""; mf.setAttribute("read-only", ""); }
+  }
+}
+const formelnAlsText = html => html.replace(/<span class="formel"[^>]*data-latex="([^"]*)"[^>]*>[\s\S]*?<\/span>/g, (_, l) => `<span class="formel">${l.replace(/&quot;/g, '"')}</span>`);
+function formelBearbeiten(sp, vorlage = "") {
+  if (aktiveFormel && !editor.contains(aktiveFormel)) aktiveFormel = null;
+  if (aktiveFormel && aktiveFormel !== sp) formelBeenden(aktiveFormel, null);
+  const mf = sp.querySelector("math-field"); if (!mf) return;
+  if (aktiveFormel !== sp) merken("formel");
+  aktiveFormel = sp; sp.classList.add("bearbeiten");
+  mf.removeAttribute("read-only"); mf.readOnly = false;
+  setTimeout(() => { mf.focus(); if (vorlage) mf.insert(vorlage, { selectionMode: "placeholder" }); }, 40);
+}
+function caretNeben(knoten, danach) {
+  const r = document.createRange();
+  if (danach) { let n = knoten.nextSibling; if (!n || n.nodeType !== 3) { n = document.createTextNode("​"); knoten.after(n); } r.setStart(n, n.data.startsWith("​") ? 1 : 0); }
+  else r.setStartBefore(knoten);
+  r.collapse(true); editor.focus({ preventScroll: true }); getSelection().removeAllRanges(); getSelection().addRange(r);
+}
+function formelBeenden(sp, wohin = "nach") {
+  if (!sp || !editor.contains(sp)) { aktiveFormel = null; return; }
+  const mf = sp.querySelector("math-field");
+  const latex = mf ? mf.value.replace(/\\placeholder(\[[^\]]*\])?\{\}/g, "").trim() : "";
+  aktiveFormel = null; sp.classList.remove("bearbeiten");
+  if (window.mathVirtualKeyboard) { try { mathVirtualKeyboard.hide(); } catch { } }
+  if (!latex) { const zeile = sp.closest("p.formelzeile"); const nach = sp.nextSibling; sp.remove(); if (zeile && !zeile.textContent.replace(/​/g, "").trim() && !zeile.querySelector(".formel")) zeile.classList.remove("formelzeile"); if (wohin) { editor.focus(); } neuOrdnen(); geaendert(); return; }
+  sp.dataset.latex = latex;
+  if (mf) { mf.setAttribute("read-only", ""); mf.readOnly = true; }
+  if (wohin) caretNeben(sp, wohin === "nach");
+  neuOrdnen(); geaendert();
+}
+function formelEinfuegen(vorlage = "") {
+  if (aktiveFormel && !editor.contains(aktiveFormel)) aktiveFormel = null; // z. B. nach „Neue Stunde“ oder Rückgängig
+  if (aktiveFormel) { const mf = aktiveFormel.querySelector("math-field"); if (vorlage) { mf.focus(); mf.insert(vorlage, { selectionMode: "placeholder" }); } return; }
+  const sel = getSelection();
+  if (!sel.rangeCount || !editor.contains(sel.anchorNode)) cursorAnsEnde();
+  merken("formel");
+  const r = getSelection().getRangeAt(0); r.deleteContents();
+  const block = (r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentNode).closest("p,h1,h2,h3,li,td");
+  if (block && block.matches("p") && !block.textContent.replace(/​/g, "").trim() && !block.querySelector("img,.formel")) block.classList.add("formelzeile");
+  const sp = document.createElement("span"); sp.className = "formel"; sp.contentEditable = "false"; sp.dataset.latex = "";
+  sp.appendChild(neuesFeld("")); r.insertNode(sp);
+  const zw = document.createTextNode("​"); sp.after(zw);
+  if (block) block.querySelectorAll(":scope > br").forEach(b => b.remove());
+  aktiveFormel = sp; formelBearbeiten(sp, vorlage); // Schnappschuss von oben reicht – kein zweites merken()
+  neuOrdnen();
+}
+editor.addEventListener("click", e => { const sp = e.target.closest && e.target.closest(".formel"); if (sp && werkzeug === "tippen" && sp !== aktiveFormel) { e.preventDefault(); formelBearbeiten(sp); } });
+// Tasten im Formel-Feld: Tab = aus Bruch/Hochzahl heraus, ganz außen = zurück in den Text; Enter/Esc = fertig
+editor.addEventListener("keydown", e => {
+  const mf = e.target && e.target.closest && e.target.closest("math-field"); if (!mf) return;
+  const sp = mf.closest(".formel");
+  if (e.key === "Tab") {
+    e.preventDefault(); e.stopPropagation();
+    if (e.shiftKey) { const vor = mf.position; mf.executeCommand("moveBeforeParent"); if (mf.position === vor) formelBeenden(sp, "vor"); return; }
+    const vor = mf.position; mf.executeCommand("moveAfterParent"); if (mf.position === vor) formelBeenden(sp, "nach");
+    return;
+  }
+  if (e.key === "Enter" || e.key === "Escape") { e.preventDefault(); e.stopPropagation(); formelBeenden(sp, "nach"); return; }
+  // Immer gleich, egal welche Tastatur: „/“ = Bruch (was davor steht, kommt nach oben), „^“ = Hochzahl, „_“ = Index
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  if (e.key === "/") { e.preventDefault(); e.stopPropagation(); mf.executeCommand(["insert", "\\frac{#@}{#?}", { selectionMode: "placeholder" }]); return; }
+  if (e.key === "^") { e.preventDefault(); e.stopPropagation(); mf.executeCommand("moveToSuperscript"); return; }
+  if (e.key === "_") { e.preventDefault(); e.stopPropagation(); mf.executeCommand("moveToSubscript"); return; }
+}, true);
+editor.addEventListener("move-out", e => { const sp = e.target.closest && e.target.closest(".formel"); if (sp) formelBeenden(sp, e.detail && e.detail.direction === "backward" ? "vor" : "nach"); });
+editor.addEventListener("focusout", e => {
+  const mf = e.target && e.target.closest && e.target.closest("math-field"); if (!mf) return;
+  setTimeout(() => { const sp = mf.closest(".formel"); if (sp && sp === aktiveFormel && document.activeElement !== mf && !(document.activeElement && document.activeElement.closest && document.activeElement.closest(".ML__keyboard"))) formelBeenden(sp, null); }, 120);
+});
+editor.addEventListener("input", e => { const mf = e.target && e.target.closest && e.target.closest("math-field"); if (mf) { const sp = mf.closest(".formel"); if (sp) sp.dataset.latex = mf.value; } }, true);
+$("#formel-neu").addEventListener("mousedown", e => e.preventDefault());
+$("#formel-neu").onclick = () => { if (aktiveFormel) formelBeenden(aktiveFormel, "nach"); formelEinfuegen(); };
+$$("[data-formel]").forEach(b => { b.addEventListener("mousedown", e => e.preventDefault()); b.onclick = () => formelEinfuegen(b.dataset.formel); });
+$("#formel-tastatur").addEventListener("mousedown", e => e.preventDefault());
+$("#formel-tastatur").onclick = () => {
+  if (!aktiveFormel) formelEinfuegen();
+  setTimeout(() => { try { const k = window.mathVirtualKeyboard; if (k) { k.visible ? k.hide() : k.show(); } } catch { } aktiveFormel && aktiveFormel.querySelector("math-field").focus(); }, 60);
+};
+
+/* =====================================================================
    Automatisch speichern
    ===================================================================== */
 let speicherTimer = null;
@@ -1241,7 +1431,54 @@ const entwurfDaten = () => JSON.stringify({ fach: $("#fach").value, thema: $("#t
 function geaendert() { $("#status").textContent = "… speichert"; clearTimeout(speicherTimer); speicherTimer = setTimeout(speichern, 600); }
 async function speichern() { clearTimeout(speicherTimer); speicherTimer = null; try { await API.entwurfSpeichern(entwurfDaten()); $("#status").textContent = "✓ gespeichert"; } catch { $("#status").textContent = "⚠ Speichern fehlgeschlagen"; } }
 ["#thema", "#datum"].forEach(s => $(s).addEventListener("input", geaendert));
-$("#fach").addEventListener("change", () => { setzeFarbe(); geaendert(); });
+$("#fach").addEventListener("change", e => {
+  const s = e.target;
+  if (s.value === "__neu__") { s.value = s.dataset.vorher || ""; fachDialog(); return; }
+  s.dataset.vorher = s.value; setzeFarbe(); geaendert();
+});
+
+/* Fach anlegen / ändern */
+let fachBearbeiten = null, fachTyp = "theorie", fachFarbWahl = FARBEN[0], fachDanach = null;
+FARBEN.forEach(c => { const b = document.createElement("button"); b.style.background = c; b.title = c; b.onclick = () => { fachFarbWahl = c; $$("#farbwahl button").forEach(x => x.classList.toggle("an", x === b)); }; $("#farbwahl").appendChild(b); });
+$$(".typkarte").forEach(k => k.onclick = () => { fachTyp = k.dataset.typ; $$(".typkarte").forEach(x => x.classList.toggle("an", x === k)); });
+function fachDialog(alt = null, opt = {}) {
+  fachBearbeiten = alt; fachDanach = opt.danach || null;
+  fachTyp = alt ? alt.typ : "theorie";
+  const frei = FARBEN.find(c => !faecher.some(f => f.farbe === c)) || FARBEN[faecher.length % FARBEN.length];
+  fachFarbWahl = alt ? alt.farbe : frei;
+  $("#fach-titel").textContent = alt ? `Fach „${alt.name}“ ändern` : "Neues Fach anlegen";
+  $("#fach-ok").textContent = alt ? "Speichern" : "Fach anlegen";
+  $("#fach-name").value = alt ? alt.name : (opt.name || "");
+  $("#fach-hinweis").style.display = opt.hinweis ? "" : "none"; $("#fach-hinweis").textContent = opt.hinweis || "";
+  $$(".typkarte").forEach(x => x.classList.toggle("an", x.dataset.typ === fachTyp));
+  $$("#farbwahl button").forEach(x => x.classList.toggle("an", x.title === fachFarbWahl));
+  dialog("#fach-hg"); setTimeout(() => $("#fach-name").focus(), 50);
+}
+$("#fach-abbrechen").onclick = () => { dialog("#fach-hg", false); fachDanach = null; };
+$("#fach-name").addEventListener("keydown", e => { if (e.key === "Enter") $("#fach-ok").click(); });
+$("#fach-ok").onclick = async () => {
+  const name = $("#fach-name").value.replace(/[\\/:*?"<>|]+/g, "").trim();
+  if (!name) { meldung("Bitte einen Namen eingeben."); return; }
+  if (faecher.some(f => f.name.toLowerCase() === name.toLowerCase() && f !== fachBearbeiten)) { meldung("Dieses Fach gibt es schon."); return; }
+  const neu = { name, typ: fachTyp, farbe: fachFarbWahl };
+  if (fachBearbeiten) { const i = faecher.indexOf(fachBearbeiten); const warAktiv = $("#fach").value === fachBearbeiten.name; faecher[i] = neu; await faecherSpeichern(); fuelleFaecher(warAktiv ? name : $("#fach").value); }
+  else { faecher.push(neu); await faecherSpeichern(); fuelleFaecher(name); }
+  dialog("#fach-hg", false); geaendert(); faecherListe();
+  const d = fachDanach; fachDanach = null; if (d) d();
+};
+function faecherListe() {
+  const l = $("#fachliste"); l.innerHTML = "";
+  if (!faecher.length) { l.innerHTML = '<p style="color:var(--leise)">Noch keine Fächer – leg dein erstes an.</p>'; return; }
+  for (const f of faecher) {
+    const z = document.createElement("div"); z.className = "fachzeile";
+    z.innerHTML = `<i style="background:${f.farbe}"></i><span class="nm">${esc(f.name)}</span><span class="ty">${f.typ === "mathe" ? "🔢 Mathe" : "📝 Theorie"}</span>`;
+    const aendern = document.createElement("button"); aendern.className = "knopf"; aendern.textContent = "Ändern"; aendern.onclick = () => fachDialog(f);
+    const weg = document.createElement("button"); weg.className = "knopf"; weg.textContent = "Entfernen";
+    weg.onclick = async () => { if (!confirm(`„${f.name}“ aus der Liste entfernen?\n(Ordner und Word-Dateien bleiben erhalten.)`)) return; faecher = faecher.filter(x => x !== f); await faecherSpeichern(); fuelleFaecher($("#fach").value); faecherListe(); geaendert(); };
+    z.append(aendern, weg); l.appendChild(z);
+  }
+}
+$("#faecher-neu").onclick = () => fachDialog();
 window.addEventListener("beforeunload", () => { if (speicherTimer) API.entwurfSofortSpeichern(entwurfDaten()); });
 
 /* =====================================================================
@@ -1270,7 +1507,7 @@ function seitenHTML() {
   return `<!doctype html><html><head><meta charset="utf-8"><style>${stil}
   html,body{background:#fff;overflow:hidden;display:block}.blatt{margin:0;box-shadow:none;border-radius:0}</style></head>
   <body style="--akzent:${getComputedStyle(document.documentElement).getPropertyValue("--akzent")};--akzent-hell:${getComputedStyle(document.documentElement).getPropertyValue("--akzent-hell")}">
-  <div class="blatt" style="min-height:${blatt.offsetHeight}px"><div id="editor">${editor.innerHTML}</div><svg id="tinte" xmlns="${SVGNS}">${tinte}</svg></div></body></html>`;
+  <div class="blatt" style="min-height:${blatt.offsetHeight}px"><div id="editor">${formelnAlsText(editor.innerHTML)}</div><svg id="tinte" xmlns="${SVGNS}">${tinte}</svg></div></body></html>`;
 }
 async function exportHTML() {
   await fremdeBilderEinbetten();
@@ -1301,6 +1538,8 @@ async function exportHTML() {
     if (ziel) { let z = ziel; while (z.nextElementSibling && istPlatz(z.nextElementSibling)) z = z.nextElementSibling; z.after(p); } else kopie.appendChild(p);
   });
   kopie.querySelectorAll(".zeichenplatz").forEach(z => z.remove());
+  kopie.querySelectorAll(".formel").forEach(f => { const n = document.createElement("span"); n.className = "formel"; n.dataset.latex = f.dataset.latex || ""; n.textContent = "$" + (f.dataset.latex || "") + "$"; f.replaceWith(n); });
+  { const w = document.createTreeWalker(kopie, NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) if (t.data.includes("\u200b")) t.data = t.data.replace(/\u200b/g, ""); }
   kopie.querySelectorAll("[data-b]").forEach(z => z.removeAttribute("data-b"));
   kopie.querySelectorAll("img").forEach(i => {
     if (i.dataset.art === "handschrift") return;
@@ -1317,7 +1556,9 @@ async function exportHTML() {
 <meta name="mitschrift-thema" content="${esc(thema)}">
 <meta name="mitschrift-datum" content="${esc(datum)}">
 <meta name="mitschrift-erstellt" content="${new Date().toISOString()}">
-<meta name="mitschrift-version" content="2">
+<meta name="mitschrift-version" content="3">
+<meta name="mitschrift-farbe" content="${esc((aktuellesFach() || {}).farbe || "")}">
+<meta name="mitschrift-typ" content="${esc((aktuellesFach() || {}).typ || "theorie")}">
 <style>body{font-family:Calibri,Arial,sans-serif;max-width:820px;margin:30px auto;line-height:1.55;padding:0 16px}img{max-width:100%}
 blockquote{margin:10px 0;padding:8px 12px}blockquote.merke{background:#FFF6D6;border-left:5px solid #E8B931}blockquote.beispiel{background:#F1F3F5;border-left:5px solid #9AA3AE}blockquote.zitat{border-left:4px solid #ccc;font-style:italic}
 table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:5px 8px}ul.striche{list-style-type:"–  "}ol.buchstaben{list-style-type:lower-alpha}ol.roemisch{list-style-type:upper-roman}
@@ -1332,6 +1573,7 @@ ${kopie.innerHTML}
 async function exportieren(themaGefragt = false) {
   bildMenueZu(); werkzeugWaehlen("tippen");
   if (!editor.textContent.trim() && !editor.querySelector("img,table") && !striche.length) { meldung("Du hast noch nichts geschrieben."); return; }
+  if (!aktuellesFach()) { fachDialog(null, { hinweis: "Zu welchem Fach gehört diese Stunde?", danach: () => exportieren(themaGefragt) }); return; }
   if (!$("#thema").value.trim() && !themaGefragt) { dialog("#thema-hg"); setTimeout(() => $("#thema-frage").focus(), 30); return; }
   if (!$("#datum").value) $("#datum").value = heute();
   if (API.desktop) { const ein = await API.einstellungen(); if (!ein.eingang) { ortDialog(() => exportieren(true)); return; } }
@@ -1356,7 +1598,7 @@ $("#ordner-zeigen").onclick = () => API.eingangOeffnen();
 
 async function neueStunde() {
   await API.letzteSpeichern({ fach: $("#fach").value, thema: $("#thema").value, datum: $("#datum").value, html: editor.innerHTML, striche });
-  editor.innerHTML = "<p><br></p>"; striche = []; verlauf.zurueck = []; verlauf.vor = [];
+  aktiveFormel = null; editor.innerHTML = "<p><br></p>"; striche = []; verlauf.zurueck = []; verlauf.vor = [];
   $("#thema").value = ""; $("#datum").value = heute(); layout(); await speichern();
   dialog("#fertig-hg", false); dialog("#mehr-hg", false); cursorAnsEnde();
 }
@@ -1366,7 +1608,7 @@ $("#m-neu").onclick = () => { if ((editor.textContent.trim() || striche.length) 
 $("#m-letzte").onclick = async () => {
   const l = await API.letzteLaden(); if (!l) { meldung("Keine frühere Stunde gespeichert."); return; }
   merken(); const jetzt = { fach: $("#fach").value, thema: $("#thema").value, datum: $("#datum").value, html: editor.innerHTML, striche };
-  fuelleFaecher(l.fach); $("#thema").value = l.thema || ""; $("#datum").value = l.datum || heute(); editor.innerHTML = l.html || "<p><br></p>"; striche = l.striche || [];
+  fuelleFaecher(l.fach); $("#thema").value = l.thema || ""; $("#datum").value = l.datum || heute(); editor.innerHTML = l.html || "<p><br></p>"; striche = l.striche || []; formelnAufbauen();
   await API.letzteSpeichern(jetzt); layout(); await speichern(); dialog("#mehr-hg", false); meldung("Wiederhergestellt ✓");
 };
 /* Speicherort für Claude */
@@ -1382,11 +1624,7 @@ $("#speicherort").onclick = () => API.desktop ? ortDialog() : meldung("Die Brows
 $("#ort-ok").onclick = async () => { if (!ortVorschlag) { const o = await ortWaehlen(); if (!o) return; } else ortAnzeigen(await API.eingangSetzen(ortVorschlag.replace(/[\\/]_Eingang$/i, ""))); dialog("#ort-hg", false); const d = ortDanach; ortDanach = null; if (d) d(); };
 $("#ort-anderer").onclick = async () => { const o = await ortWaehlen(); if (!o) return; dialog("#ort-hg", false); const d = ortDanach; ortDanach = null; if (d) d(); };
 $("#m-ordner").onclick = () => { dialog("#mehr-hg", false); ortDialog(); };
-$("#m-fach").onclick = async () => {
-  const n = (prompt("Name des Fachs (genau wie der Ordner, z. B. „Geschichte“):") || "").trim(); if (!n) return;
-  if (!alleFaecher().some(f => f[0] === n)) { eigeneFaecher.push([n, "#455A64"]); await API.einstellungSetzen("eigeneFaecher", eigeneFaecher); }
-  fuelleFaecher(n); geaendert(); dialog("#mehr-hg", false);
-};
+$("#m-fach").onclick = () => { dialog("#mehr-hg", false); faecherListe(); dialog("#faecher-hg"); };
 
 /* =====================================================================
    Start
@@ -1394,7 +1632,7 @@ $("#m-fach").onclick = async () => {
 function cursorAnsEnde() { editor.focus({ preventScroll: true }); const r = document.createRange(); r.selectNodeContents(editor.lastElementChild || editor); r.collapse(false); getSelection().removeAllRanges(); getSelection().addRange(r); }
 (async () => {
   document.execCommand("defaultParagraphSeparator", false, "p");
-  const e = await API.einstellungen(); eigeneFaecher = e.eigeneFaecher || [];
+  const e = await API.einstellungen(); faecher = Array.isArray(e.faecher) ? e.faecher : []; // alte, fest eingebaute Liste gibt es nicht mehr
   let d = await API.entwurfLaden(); if (typeof d === "string") { try { d = JSON.parse(d); } catch { d = null; } }
   if (d) {
     fuelleFaecher(d.fach); $("#thema").value = d.thema || ""; $("#datum").value = d.datum || heute();
@@ -1402,10 +1640,15 @@ function cursorAnsEnde() { editor.focus({ preventScroll: true }); const r = docu
     // alte Version (Überschriften waren h2/h3) behutsam übernehmen
     if (!d.version) editor.querySelectorAll(":scope > h2, :scope > h3").forEach(h => umbenennen(h, h.nodeName === "H2" ? "h1" : "h2"));
     $("#status").textContent = "✓ gespeichert";
-  } else { fuelleFaecher("EBC"); $("#datum").value = heute(); editor.innerHTML = "<p><br></p>"; $("#status").textContent = "bereit"; }
+  } else { fuelleFaecher(""); $("#datum").value = heute(); editor.innerHTML = "<p><br></p>"; $("#status").textContent = "bereit"; }
+  formelnAufbauen();
   layout(); cursorAnsEnde();
-  if (!API.desktop) meldung("Tipp: In der Desktop-App funktioniert alles am besten.", 4000);
+  // Noch kein (passendes) Fach? → gleich anlegen lassen
+  const fachFehlt = !faecher.length || (d && d.fach && !fachInfo(d.fach));
+  if (fachFehlt) setTimeout(() => fachDialog(null, { name: d && d.fach && !fachInfo(d.fach) ? d.fach : "", hinweis: faecher.length ? "Dein aktuelles Blatt gehört zu einem Fach, das noch nicht in der Liste ist." : "Leg zuerst deine Fächer an. Für jedes Fach wählst du, ob es eher Theorie oder Mathe ist – Mathe-Fächer bekommen eine Formel-Leiste.", danach: () => { if (API.desktop && !e.eingangBestaetigt && !e.test) ortDialog(); } }), 300);
   ortAnzeigen(e.eingang);
+  if (fachFehlt) return;
+  if (!API.desktop) meldung("Tipp: In der Desktop-App funktioniert alles am besten.", 4000);
   if (API.desktop && !e.eingangBestaetigt && !e.test) setTimeout(() => ortDialog(), 400);
   else if (!e.hinweisFreiSchreiben) { setTimeout(() => meldung("Neu: Doppelklick auf eine freie Stelle → dort schreiben. Textfelder kannst du mit der Maus verschieben.", 7000), 1200); API.einstellungSetzen("hinweisFreiSchreiben", true); }
 })();

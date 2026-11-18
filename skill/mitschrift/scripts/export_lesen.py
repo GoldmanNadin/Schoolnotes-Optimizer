@@ -24,6 +24,9 @@ LEGENDE = """<!-- Legende der Markierungen:
 [MERKE-KASTEN] ... [/MERKE-KASTEN]   = von der Schülerin als „Merke“ markiert (wichtig!)
 [BEISPIEL-KASTEN] ... [/BEISPIEL-KASTEN]  = als Beispiel markiert
 [ZITAT] ... [/ZITAT]                   = Zitat / Definition
+$…$                                    = Formel (LaTeX), genau so übernehmen, z. B. $\\frac{3}{4}$ = ¾
+[Formelzeile] $…$                      = Formel in einer eigenen, zentrierten Zeile
+^{…} / _{…}                            = hoch- / tiefgestellter Text im normalen Text (z. B. m^{2}, H_{2}O)
 ⇥                                      = Tab-Taste (Abstand/Einrückung, oft für Spalten wie „Begriff ⇥ Erklärung“)
 [zentriert] / [rechtsbündig] / [Blocksatz] / [eingerückt]  = so hat sie den Absatz ausgerichtet
 [HANDSCHRIFT n: datei | ...]           = direkt aufs Blatt gezeichnet/geschrieben (Mindmap, Pfeile, Kreise,
@@ -130,6 +133,12 @@ class Leser(HTMLParser):
             else:
                 self.puffer = "## " if tag in ("h1", "h2") else "### "
             self.puffer += ausrichtung(a)
+        elif tag == "p" and "formelzeile" in (a.get("class") or ""):
+            self.zeile_beenden(); self.puffer = "[Formelzeile] "
+        elif tag == "sup":
+            self.schreibe("^{"); self.inline.append("}")
+        elif tag == "sub":
+            self.schreibe("_{"); self.inline.append("}")
         elif tag == "p" and "bildquelle" in (a.get("class") or ""):
             self.zeile_beenden(); self.puffer = "(Bildquelle) "
         elif tag in ("p", "div"):
@@ -204,7 +213,7 @@ class Leser(HTMLParser):
         if tag in ("script", "style", "svg"):
             self.ignorieren = max(0, self.ignorieren - 1)
             return
-        if tag in ("b", "strong", "i", "em", "u", "mark", "span", "font"):
+        if tag in ("b", "strong", "i", "em", "u", "mark", "span", "font", "sup", "sub"):
             if self.inline:
                 self.schreibe(self.inline.pop())
         elif tag in ("h1", "h2", "h3", "h4"):
@@ -243,7 +252,7 @@ class Leser(HTMLParser):
     def handle_data(self, data):
         if not self.in_main or self.ignorieren:
             return
-        text = re.sub(r"[ \n\r\f\v]+", " ", data).replace("\t", " ⇥ ")
+        text = re.sub(r"[ \n\r\f\v]+", " ", data.replace("\u200b", "")).replace("\t", " ⇥ ")
         if not text.strip() and not self.puffer and self.zelle is None:
             return
         self.schreibe(text)
@@ -341,6 +350,7 @@ def auspacken(datei, ziel):
     (ziel / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({"ok": True, "inhalt": str(ziel / "inhalt.md"), "fach": meta.get("fach"),
                       "thema": meta.get("thema"), "datum": meta.get("datum"),
+                      "farbe": meta.get("farbe") or None, "typ": meta.get("typ") or None,
                       "bilder": [str(ziel / b["datei"]) for b in leser.bilder]}, ensure_ascii=False, indent=2))
 
 

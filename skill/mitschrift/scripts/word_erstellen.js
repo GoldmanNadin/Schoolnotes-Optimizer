@@ -16,6 +16,7 @@ const {
   BorderStyle, AlignmentType, HeadingLevel, ImageRun, Footer, PageNumber, PositionalTab,
   PositionalTabAlignment, PositionalTabRelativeTo, PositionalTabLeader, LevelFormat, Bookmark,
   InternalHyperlink, LineRuleType, TableLayoutType, Tab,
+  Math: OMath, MathRun, MathFraction, MathSuperScript, MathSubScript, MathSubSuperScript, MathRadical,
 } = require("docx");
 const JSZip = require("jszip");
 
@@ -61,6 +62,88 @@ const BREITE = SEITE_B - 2 * RAND;                // 9638 DXA ≈ 17 cm
 const FONT = "Arial";
 
 /* ---------------- Text mit **fett**, *kursiv*, ==markiert==, __unterstrichen__ ---------------- */
+/* ---------------- Formeln: LaTeX (aus dem Notizblock) → echte Word-Formel ---------------- */
+const SYMBOLE = {
+  cdot: "·", times: "×", div: "÷", pm: "±", mp: "∓", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠",
+  approx: "≈", equiv: "≡", infty: "∞", to: "→", rightarrow: "→", leftarrow: "←", Rightarrow: "⇒", Leftrightarrow: "⇔",
+  leftrightarrow: "↔", degree: "°", circ: "°", percent: "%", ldots: "…", dots: "…", cdots: "⋯", in: "∈", notin: "∉",
+  subset: "⊂", cup: "∪", cap: "∩", emptyset: "∅", forall: "∀", exists: "∃", partial: "∂", nabla: "∇", sum: "∑",
+  prod: "∏", int: "∫", angle: "∠", perp: "⊥", parallel: "∥", lt: "<", gt: ">", mid: "|", vert: "|",
+  alpha: "α", beta: "β", gamma: "γ", delta: "δ", epsilon: "ε", varepsilon: "ε", zeta: "ζ", eta: "η", theta: "θ",
+  vartheta: "ϑ", iota: "ι", kappa: "κ", lambda: "λ", mu: "μ", nu: "ν", xi: "ξ", pi: "π", rho: "ρ", sigma: "σ",
+  tau: "τ", upsilon: "υ", phi: "φ", varphi: "φ", chi: "χ", psi: "ψ", omega: "ω", Gamma: "Γ", Delta: "Δ",
+  Theta: "Θ", Lambda: "Λ", Xi: "Ξ", Pi: "Π", Sigma: "Σ", Phi: "Φ", Psi: "Ψ", Omega: "Ω",
+  exponentialE: "e", imaginaryI: "i", differentialD: "d",
+};
+const FUNKTIONEN = new Set(["sin", "cos", "tan", "cot", "arcsin", "arccos", "arctan", "sinh", "cosh", "tanh", "log", "ln", "lg", "exp", "lim", "max", "min", "det", "mod"]);
+function latexZuMath(src) {
+  let i = 0;
+  const flach = a => a.flat(Infinity);
+  const mindestens = a => { const f = flach(a); return f.length ? f : [new MathRun(" ")]; };
+  const leer = () => { while (i < src.length && /\s/.test(src[i])) i++; };
+  function rohGruppe() { // Text in {…} unverändert
+    leer(); if (src[i] !== "{") return "";
+    let tiefe = 0, start = ++i;
+    for (; i < src.length; i++) { if (src[i] === "{") tiefe++; else if (src[i] === "}") { if (!tiefe) break; tiefe--; } }
+    return src.slice(start, i++);
+  }
+  // Argument ohne {} = genau EIN Zeichen/Befehl (LaTeX: \frac34 = 3/4, x^23 = x²3)
+  function argument() { leer(); if (src[i] === "{") { i++; return liste("}"); } if (/[0-9]/.test(src[i] || "")) return [new MathRun(src[i++])]; const a = atom(); return a == null ? [] : [a]; }
+  function befehl() {
+    i++; // Backslash
+    let name = "";
+    if (/[a-zA-Z]/.test(src[i] || "")) { while (/[a-zA-Z]/.test(src[i] || "")) name += src[i++]; }
+    else name = src[i++] || "";
+    switch (name) {
+      case "frac": case "dfrac": case "tfrac": case "cfrac": { const z = argument(), n = argument(); return new MathFraction({ numerator: mindestens(z), denominator: mindestens(n) }); }
+      case "sqrt": { let grad = null; leer(); if (src[i] === "[") { let t = 0, s = ++i; for (; i < src.length; i++) { if (src[i] === "[") t++; else if (src[i] === "]") { if (!t) break; t--; } } grad = latexZuListe(src.slice(s, i++)); } const inh = argument(); return new MathRadical({ children: mindestens(inh), ...(grad && flach(grad).length ? { degree: flach(grad) } : {}) }); }
+      case "left": case "right": case "big": case "Big": case "bigl": case "bigr": case "Bigl": case "Bigr": { leer(); if (src[i] === "\\") { i++; let d = ""; while (/[a-zA-Z]/.test(src[i] || "")) d += src[i++]; if (!d) d = src[i++]; return new MathRun({ lbrace: "{", rbrace: "}", vert: "|", langle: "⟨", rangle: "⟩", "{": "{", "}": "}", "|": "‖" }[d] || ""); } const c = src[i++]; return c === "." ? null : new MathRun(c); }
+      case "text": case "textrm": case "mathrm": case "operatorname": case "mathit": case "mathbf": case "textbf": case "mbox": return new MathRun(rohGruppe().replace(/\\,|\\;|\\ /g, " "));
+      case "placeholder": { leer(); if (src[i] === "[") { while (i < src.length && src[i] !== "]") i++; i++; } rohGruppe(); return null; }
+      case ",": case ";": case ":": case " ": case "quad": case "qquad": return new MathRun(" ");
+      case "!": return null;
+      case "{": case "}": case "%": case "$": case "#": case "&": case "_": return new MathRun(name);
+      case "\\": return new MathRun(" ");
+      default:
+        if (SYMBOLE[name]) return new MathRun(SYMBOLE[name]);
+        if (FUNKTIONEN.has(name)) return new MathRun(name);
+        return new MathRun(name);
+    }
+  }
+  function atom() {
+    leer();
+    if (i >= src.length) return null;
+    const c = src[i];
+    if (c === "\\") return befehl();
+    if (c === "{") { i++; return liste("}"); }
+    if (/[0-9.,]/.test(c)) { let z = ""; while (/[0-9.,]/.test(src[i] || "")) z += src[i++]; return new MathRun(z); }
+    i++;
+    return new MathRun({ "-": "−", "*": "·", "'": "′" }[c] || c);
+  }
+  function liste(ende) {
+    const out = [];
+    while (i < src.length) {
+      leer();
+      if (ende && src[i] === ende) { i++; break; }
+      if (src[i] === "}") { i++; continue; }
+      if (src[i] === "^" || src[i] === "_") {
+        let hoch = null, tief = null;
+        while (src[i] === "^" || src[i] === "_") { const c = src[i++]; const a = argument(); if (c === "^") hoch = a; else tief = a; leer(); }
+        let basis = out.pop(); basis = basis == null ? [new MathRun(" ")] : flach([basis]);
+        if (hoch && tief) out.push(new MathSubSuperScript({ children: basis, subScript: mindestens(tief), superScript: mindestens(hoch) }));
+        else if (hoch) out.push(new MathSuperScript({ children: basis, superScript: mindestens(hoch) }));
+        else out.push(new MathSubScript({ children: basis, subScript: mindestens(tief) }));
+        continue;
+      }
+      const a = atom();
+      if (a != null) out.push(a);
+    }
+    return out;
+  }
+  function latexZuListe(s) { const alt = [src, i]; src = s; i = 0; const r = liste(null); [src, i] = alt; return r; }
+  return new OMath({ children: mindestens(liste(null)) });
+}
+
 // Textstück; \t wird zu einem echten Word-Tabulator
 function lauf(text, basis) {
   if (!text.includes("\t")) return new TextRun({ text, ...basis });
@@ -71,13 +154,16 @@ function lauf(text, basis) {
 function laeufe(text, basis = {}) {
   const out = [];
   const s = String(text ?? "");
-  const re = /(\*\*[^*]+?\*\*|==[^=]+?==|__[^_]+?__|\*[^*\s][^*]*?\*)/g;
+  const re = /(\$[^$]+?\$|\^\{[^}]*\}|_\{[^}]*\}|\*\*[^*]+?\*\*|==[^=]+?==|__[^_]+?__|\*[^*\s][^*]*?\*)/g;
   let pos = 0, m;
   while ((m = re.exec(s))) {
     if (m.index > pos) out.push(lauf(s.slice(pos, m.index), basis));
     const t = m[0];
     // verschachtelt erlaubt, z. B. **fett mit ==Markierung==**
-    if (t.startsWith("**")) out.push(...laeufe(t.slice(2, -2), { ...basis, bold: true }));
+    if (t.startsWith("$")) out.push(latexZuMath(t.slice(1, -1)));
+    else if (t.startsWith("^{")) out.push(...laeufe(t.slice(2, -1), { ...basis, superScript: true }));
+    else if (t.startsWith("_{")) out.push(...laeufe(t.slice(2, -1), { ...basis, subScript: true }));
+    else if (t.startsWith("**")) out.push(...laeufe(t.slice(2, -2), { ...basis, bold: true }));
     else if (t.startsWith("==")) out.push(...laeufe(t.slice(2, -2), { ...basis, bold: true, color: basis.color || F.dunkel, shading: { type: ShadingType.CLEAR, color: "auto", fill: F.mittel } }));
     else if (t.startsWith("__")) out.push(...laeufe(t.slice(2, -2), { ...basis, underline: {} }));
     else out.push(...laeufe(t.slice(1, -1), { ...basis, italics: true }));
@@ -249,6 +335,11 @@ function baustein(b) {
     case "achtung": return kasten({ titel: b.titel || T.achtung, titelFarbe: "B42318", fill: "FDECEA", rand: "D92D20", kinder: kastenInhalt(b) });
     case "zusammenfassung": return kasten({ titel: b.titel || T.zusammenfassung, titelFarbe: F.dunkel, fill: "FFFFFF", rand: F.akzent, rundum: true, kinder: kastenInhalt(b) });
     case "formel": {
+      if (b.latex) { // echte Word-Formel, mittig
+        const out = [new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 160 }, children: [latexZuMath(b.latex)] })];
+        if (b.erklaerung) out.push(...absatzText(b.erklaerung, { para: { alignment: AlignmentType.CENTER, spacing: { after: 160 } }, run: { size: 19, color: F.grau } }));
+        return out;
+      }
       const out = [new Paragraph({
         alignment: AlignmentType.CENTER, spacing: { before: 120, after: b.erklaerung ? 40 : 160 }, keepNext: !!b.erklaerung,
         shading: { type: ShadingType.CLEAR, color: "auto", fill: F.hell },

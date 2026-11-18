@@ -81,12 +81,14 @@ Fach-Ordner = `<Schuljahres-Ordner>/<fach aus dem Export>` (anlegen, falls er fe
 Aus den Notizen die Stunden-Datei `<Fach>/_Mitschrift-Daten/stunden/<datum>_<Thema-mit-Bindestrichen>.json`
 schreiben (Regeln: siehe „Gestaltungsregeln“ – **wortgetreu, nichts dazuschreiben**):
 ```json
-{ "fach": "EBC", "datum": "2026-11-16", "thema": "Das Internet",
+{ "fach": "EBC", "datum": "2026-11-16", "thema": "Das Internet", "farbe": "#1F7A5C",
   "datei": "2026-11-16 Das Internet.docx",
   "quelle": "Mitschrift_EBC_2026-11-16_Das-Internet.html",
   "bloecke": [ … ] }
 ```
 - `datei` = Name des Word-Dokuments im Fach-Ordner: `<datum> <Thema>.docx`.
+- `farbe` = die Fachfarbe aus dem Export (`farbe` in der Ausgabe von „auspacken“) – die hat sie beim
+  Anlegen des Fachs im Notizblock gewählt. Fehlt sie, gilt `faecher.json`.
 - **Gibt es die Stunden-Datei schon** (gleiches Datum + Thema)? Dann wurde die Stunde nochmal
   exportiert (z. B. nach dem Weiterschreiben) → **überschreiben**; das Word-Dokument wird ersetzt
   (die alte Version landet automatisch in `backup/`).
@@ -165,8 +167,10 @@ und schön gestaltet. Claude ist hier Layouter, nicht Autor.
    mit Titel „Zitat“. Zusätzlich darf Wichtiges, das sie **markiert, farbig, unterstrichen, eingekreist
    oder mit „!!“** geschrieben hat, in einen `merke`-Kasten oder ==hervorgehoben== werden.
    „Achtung“-Kasten nur, wenn sie selbst „Achtung“/„Vorsicht“/„Test!“ o. Ä. geschrieben hat.
-10. Formeln, die sie geschrieben hat → `formel` (ohne `erklaerung`, außer sie hat die Erklärung
-    selbst geschrieben).
+10. **Formeln** aus dem Notizblock stehen als `$…$` (LaTeX) im Text: **genau so übernehmen** – mitten im
+    Satz bleibt `$…$` im `text` stehen (wird in Word eine echte Formel). `[Formelzeile] $…$` → Baustein
+    `formel` mit `latex` (ohne `$`), ohne `erklaerung`, außer sie hat eine geschrieben. Nichts an der
+    Formel verändern oder „verbessern“. Hoch-/tiefgestellter Text `^{…}`/`_{…}` bleibt so stehen.
 11. `[zentriert]`/`[rechtsbündig]`/`[eingerückt]` übernehmen (`ausrichtung`, `einzug_cm`).
 12. Zeichnungen → sauber nachgezeichnet (Schritt 5b), an der Stelle, an der sie gezeichnet wurden.
 13. Sprache bleibt, wie sie geschrieben hat (Englisch bleibt Englisch).
@@ -195,12 +199,13 @@ neu bauen (nur auf Wunsch auch ältere) und mit der Vorschau kontrollieren. Neue
 | `merke` | `text` und/oder `punkte`, optional `titel` | Definition, Kernaussage |
 | `beispiel` | `text` und/oder `punkte`/`nummern`, optional `titel` | Beispiel, Rechenbeispiel |
 | `achtung` | `text` und/oder `punkte`, optional `titel` | nur, wenn sie selbst „Achtung“ o. Ä. geschrieben hat |
-| `formel` | `text` (z. B. "Δf = f(b) − f(a)"), optional `erklaerung` | Formel |
+| `formel` | `latex` (z. B. "\\frac{3}{4}+x^{2}") – oder `text` für einfache Formeln, optional `erklaerung` | Formel in eigener Zeile |
 | `bild` | `datei` ("bilder/…png", relativ zu `_Mitschrift-Daten`), `breite_cm` (Standard 12, max. 17), `unterschrift` (nur Bildquelle) | nachgezeichnete Skizze, Foto, Screenshot |
 | `begriffe` | `eintraege`: [{ "begriff": "…", "erklaerung": "…" }], `titel: null` | nur, wenn SIE so eine Liste geschrieben hat |
 | `zusammenfassung` | `punkte` | nur, wenn SIE eine Zusammenfassung geschrieben hat |
 
-In allen Texten: `**fett**`, `*kursiv*`, `__unterstrichen__`, `==hervorgehoben==` (farbig hinterlegt).
+In allen Texten: `**fett**`, `*kursiv*`, `__unterstrichen__`, `==hervorgehoben==` (farbig hinterlegt),
+`^{hoch}`, `_{tief}`, `$LaTeX-Formel$` (echte Word-Formel mitten im Satz).
 In Tabellenzellen: `\n` = neue Zeile, Zeile beginnt mit `- ` = Aufzählungspunkt.
 
 Bildgrößen-Richtwert: Zeichnungen mit „Breite x %“ im Export → `breite_cm` ≈ x % von 17 cm

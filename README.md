@@ -35,7 +35,20 @@ Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShel
 - Ausrichtung **links, zentriert, rechts, Blocksatz** (Strg+L / E / R / J), Einzug vergrößern/verkleinern
 - **Überall schreiben**: Doppelklick auf eine freie Stelle → dort ein Textfeld (z. B. um Pfeile zu
   beschriften). Textfelder anklicken = bearbeiten, mit der Maus ziehen = verschieben
-- Fett, kursiv, unterstrichen, Textfarben, Textmarker, Tabellen (Tab springt zur nächsten Zelle)
+- Fett, kursiv, unterstrichen, **hoch-/tiefgestellt** (m², H₂O – Strg+Umschalt+Plus / Strg+#),
+  Textfarben, Textmarker, Tabellen (Tab springt zur nächsten Zelle)
+
+**Eigene Fächer mit Typ**
+- Fächer legst du selbst an: Name, Farbe und Art – **📝 Theorie** (viel Text) oder
+  **🔢 Mathe / Naturwissenschaft** (zusätzlich die Formel-Leiste). Verwalten unter „⋯ Mehr“.
+
+**Formeln (in Mathe-Fächern)**
+- Knopf **√x Formel** (oder Strg+M / Alt+=) öffnet ein Formel-Feld direkt im Text
+- darin: **„/“ macht einen Bruch** (was davor steht, kommt nach oben), **„^“ eine Hochzahl**, „_“ einen
+  Index – **Tab** springt wieder heraus, ganz außen zurück in den normalen Text
+- Knöpfe für Bruch, Hochzahl, Wurzel, Klammer, ·, ±, ≤, ≥, ≠, ≈, π, Δ, ∞ und eine Formel-Tastatur ⌨
+- Steht die Formel allein in einer Zeile, wird sie automatisch zentriert
+- Im Word-Dokument werden daraus **echte, bearbeitbare Word-Formeln**
 - Rechtschreibprüfung mit Vorschlägen per Rechtsklick
 
 **Zeichnen direkt auf dem Blatt** – ohne extra Fenster
@@ -54,7 +67,7 @@ Oder selbst bauen: Rechtsklick auf [`bauen.ps1`](bauen.ps1) → „Mit PowerShel
 
 ## So benutzt du es
 
-1. **Notizblock** auf dem Desktop öffnen, Fach + Thema wählen, mitschreiben und zeichnen.
+1. **Notizblock** auf dem Desktop öffnen (beim ersten Mal deine Fächer anlegen), Fach + Thema wählen, mitschreiben und zeichnen.
 2. Am Ende: **„Stunde beenden → Claude“**. Die Stunde landet automatisch in
    den Ordner, den du beim ersten Start wählst (oben über den 📁-Knopf jederzeit änderbar).
 3. In der **Claude-App** (Ordner `Schule/<Schuljahr>`) eintippen: **`/mitschrift`**.

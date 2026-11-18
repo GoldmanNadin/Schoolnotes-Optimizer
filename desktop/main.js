@@ -85,7 +85,8 @@ function fensterErstellen() {
     width: 1320, height: 920, minWidth: 900, minHeight: 600,
     title: "Notizblock", backgroundColor: "#F3F4F6", show: false, autoHideMenuBar: true,
     icon: path.join(__dirname, "..", "build", "icon.png"),
-    webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: true },
+    // backgroundThrottling aus: sonst reagiert die App verzögert, wenn das Fenster teilweise verdeckt ist
+    webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: true, backgroundThrottling: false },
   });
   Menu.setApplicationMenu(null);
   fenster.loadFile(path.join(__dirname, "..", "app", "index.html"));
@@ -124,6 +125,7 @@ function fensterErstellen() {
   fenster.webContents.on("before-input-event", (e, input) => {
     if (input.type !== "keyDown" || !input.control) return;
     const wc = fenster.webContents;
+    if (input.shift && (input.key === "+" || input.key === "*")) return; // Strg+Umschalt+Plus = hochgestellt
     if (input.key === "+" || input.key === "=") { wc.setZoomLevel(wc.getZoomLevel() + 0.5); e.preventDefault(); }
     if (input.key === "-") { wc.setZoomLevel(wc.getZoomLevel() - 0.5); e.preventDefault(); }
     if (input.key === "0") { wc.setZoomLevel(0); e.preventDefault(); }
